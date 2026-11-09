@@ -1,0 +1,29 @@
+name = "LogNarayana"
+defaultTargets = ["LogNarayana"]
+
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+relaxedAutoImplicit = false
+maxSynthPendingDepth = 3
+weak.linter.mathlibStandardSet = true
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "db584cd6d46c92f209a44c0f1c829460d327499d"
+
+[[lean_lib]]
+name = "LogNarayana"
+
+# The comparator pair. Deliberately NOT in defaultTargets: `Challenge` carries a
+# permanent `sorry` (its statements are the artifact), and `lake lint` derives its
+# scope from the default targets. The comparator builds both modules itself.
+[[lean_lib]]
+name = "Challenge"
+# Some objective names are longer than a line.
+leanOptions.linter.style.longLine = false
+
+[[lean_lib]]
+name = "Solution"
+leanOptions.linter.style.longLine = false
