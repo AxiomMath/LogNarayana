@@ -133,7 +133,7 @@ coefficient below degree `k`. -/
 private lemma coeff_pow_eq_zero_of_lt {R : Type*} [CommRing R] {G : R⟦X⟧}
     (hG0 : constantCoeff G = 0) {n k : ℕ} (hnk : n < k) : coeff n (G ^ k) = 0 := by
   obtain ⟨g, rfl⟩ : X ∣ G := X_dvd_iff.mpr hG0
-  rw [mul_pow, coeff_X_pow_mul', if_neg (by omega)]
+  rw [mul_pow, coeff_X_pow_mul', ite_eq_right (by omega)]
 
 /-- Lagrange inversion for a monomial `H = X ^ j`, for every `j`, including the cases `j = 0`
 and `j > n` that `PowerSeries.LagrangeInversion` excludes. -/
@@ -147,9 +147,9 @@ private lemma natCast_mul_coeff_pow_eq_coeff_derivative_X_pow_mul {K : Type*} [F
   rcases Nat.eq_zero_or_pos j with rfl | hj
   · simp [coeff_one, show n ≠ 0 by omega]
   rcases le_or_gt j n with hjn | hjn
-  · rw [if_pos (by omega), show n - 1 - (j - 1) = n - j by omega,
+  · rw [ite_eq_left (by omega), show n - 1 - (j - 1) = n - j by omega,
       lagrangeInversion K φ G hG0 hG j n hj hjn]
-  · rw [if_neg (by omega), coeff_pow_eq_zero_of_lt hG0 hjn, mul_zero, mul_zero]
+  · rw [ite_eq_right (by omega), coeff_pow_eq_zero_of_lt hG0 hjn, mul_zero, mul_zero]
 
 
 /-- **Lagrange inversion for polynomials of the inverse series**: over a field `K` of characteristic
@@ -188,7 +188,7 @@ private lemma coeff_pow_eq (m : ℕ) :
     (((X + 1) * (X + C (X : ℝ[X]))) ^ (m + 1)).coeff m =
       ((m + 1 : ℕ) : ℝ[X]) * narayanaPolynomial (m + 1) := by
   rw [mul_pow, coeff_mul, Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk,
-    narayanaPolynomial, if_neg m.succ_ne_zero, Finset.mul_sum,
+    narayanaPolynomial, ite_eq_right m.succ_ne_zero, Finset.mul_sum,
     sum_Icc_one_eq_sum_range]
   refine Finset.sum_congr rfl fun a ha => ?_
   have ha : a ≤ m := Nat.lt_succ_iff.mp (Finset.mem_range.mp ha)
@@ -213,7 +213,7 @@ private lemma eq_narayanaGenSeries {G : PowerSeries ℝ[X]}
   · have h := PowerSeries.lagrangeInversion ℝ[X] ((X + 1) * (X + C X)) G hG0
       (by simpa [PowerSeries.algebraMap_eq] using hG) 1 (m + 1) le_rfl (by omega)
     rw [pow_one, Nat.cast_one, one_mul, Nat.add_sub_cancel, coeff_pow_eq] at h
-    rw [narayanaGenSeries, PowerSeries.coeff_mk, if_neg m.succ_ne_zero]
+    rw [narayanaGenSeries, PowerSeries.coeff_mk, ite_eq_right m.succ_ne_zero]
     exact mul_left_cancel₀ (Nat.cast_ne_zero.mpr m.succ_ne_zero) h
 
 /-- The Narayana generating series `U = narayanaGenSeries` satisfies the functional equation
@@ -313,10 +313,10 @@ private theorem sum_narayanaTupleProd_eq_coeff_pow (k n : ℕ) :
   refine Finset.sum_congr rfl fun q _ => ?_
   simp_rw [coeff_narayanaGenSeries_sub]
   split_ifs with h
-  · exact Finset.prod_congr rfl fun i _ => (if_neg (by have := h i; omega)).symm
+  · exact Finset.prod_congr rfl fun i _ => (ite_eq_right (by have := h i; omega)).symm
   · push Not at h
     obtain ⟨i, hi⟩ := h
-    exact (Finset.prod_eq_zero (Finset.mem_univ i) (by rw [if_pos hi])).symm
+    exact (Finset.prod_eq_zero (Finset.mem_univ i) (by rw [ite_eq_left hi])).symm
 
 /-- The Lagrange-inversion integrand `H'(u) φ(u)^N` for `H(u) = (u (u + 1 + x))^k` and
 `φ(u) = (u + 1)(u + x)`, with its factor `u^(k-1)` split off. -/
@@ -353,7 +353,7 @@ public theorem sum_narayanaTupleProd_eq_div_mul_coeff
   rw [derivative_pow_mul_pow hk, show n - k - 1 = (n - 2 * k) + (k - 1) by omega,
     coeff_X_pow_mul, coeff_C_mul] at key
   rw [sum_narayanaTupleProd_eq_coeff_pow, hW, mul_pow, PowerSeries.coeff_X_pow_mul',
-    if_pos (by omega)]
+    ite_eq_left (by omega)]
   have hnk : (n : ℝ) - k ≠ 0 := sub_ne_zero.mpr (by exact_mod_cast (by omega : n ≠ k))
   apply mul_left_cancel₀ (show ((n - k : ℕ) : ℝ[X]) ≠ 0 by exact_mod_cast (by omega : n - k ≠ 0))
   rw [key, ← mul_assoc, ← map_natCast C (n - k),

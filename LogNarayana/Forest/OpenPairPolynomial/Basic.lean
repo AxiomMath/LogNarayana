@@ -139,7 +139,7 @@ private lemma single_none_add_mapDomain_some (u : Option σ →₀ ℕ) :
     Finsupp.single none (u none) + u.some.mapDomain some = u := by
   ext (_ | j)
   · simp [Finsupp.mapDomain_of_notMem_range]
-  · simp [Finsupp.mapDomain_apply (Option.some_injective σ)]
+  · simp [Finsupp.mapDomain_apply_of_injective (Option.some_injective σ)]
 
 private lemma single_none_add_mapDomain_some_apply_none (a : ℕ) (α : σ →₀ ℕ) :
     (Finsupp.single none a + α.mapDomain some : Option σ →₀ ℕ) none = a := by
@@ -152,7 +152,7 @@ private lemma single_none_succ_add_mapDomain_some_sub (a b : ℕ) (α β : σ �
       Finsupp.single none a + α.mapDomain some + (Finsupp.single none b + β.mapDomain some) := by
   ext (_ | j)
   · simp [Finsupp.mapDomain_of_notMem_range]
-  · simp [Finsupp.mapDomain_apply (Option.some_injective σ)]
+  · simp [Finsupp.mapDomain_apply_of_injective (Option.some_injective σ)]
 
 omit [Algebra ℚ R] in
 private lemma monomial_eq_smul {τ : Type*} (u : τ →₀ ℕ) (c : R) :
@@ -192,7 +192,7 @@ private lemma factorialNormalization_monomial_mul_monomial (α β : σ →₀ �
       pderiv none (tConvolution
         (factorialNormalization none (monomial (Finsupp.single none a + α.mapDomain some) c))
         (factorialNormalization none (monomial (Finsupp.single none b + β.mapDomain some) d))) := by
-  rw [monomial_mul, factorialNormalization_monomial, factorialNormalization_monomial,
+  rw [monomial_mul_monomial, factorialNormalization_monomial, factorialNormalization_monomial,
     factorialNormalization_monomial, Finsupp.add_apply, single_none_add_mapDomain_some_apply_none,
     single_none_add_mapDomain_some_apply_none, tConvolution_monomial_monomial', pderiv_monomial,
     single_none_succ_add_mapDomain_some_sub, single_none_add_mapDomain_some_apply_none,
@@ -234,8 +234,8 @@ private lemma antiderivative_monomial' (t : σ) (α : σ →₀ ℕ) (c : R) :
 
 /-- The coefficients of `factorialNormalization t f`. -/
 private lemma coeff_factorialNormalization (t : σ) (f : MvPolynomial σ R) (γ : σ →₀ ℕ) :
-    coeff γ (factorialNormalization t f) =
-      coeff γ f * algebraMap ℚ R (1 / ((γ t).factorial : ℚ)) := by
+    (factorialNormalization t f).coeff γ =
+      f.coeff γ * algebraMap ℚ R (1 / ((γ t).factorial : ℚ)) := by
   classical
   induction f using MvPolynomial.induction_on' with
   | add p q hp hq => simp [hp, hq, add_mul]
@@ -260,7 +260,7 @@ private lemma factorialNormalization_mul_left (t : σ) {A : MvPolynomial σ R} (
     have hvt : v t = 0 := by
       by_contra h
       exact hA ((mem_vars_iff_mem_support t).2 ⟨v, hv, Finsupp.mem_support_iff.2 h⟩)
-    rw [factorialNormalization_monomial, monomial_mul, monomial_mul,
+    rw [factorialNormalization_monomial, monomial_mul_monomial, monomial_mul_monomial,
       factorialNormalization_monomial, Finsupp.add_apply, hvt, zero_add, mul_assoc]
 
 /-- `factorialNormalization t` turns multiplication by `t` into the antiderivative. -/
@@ -270,7 +270,7 @@ private lemma factorialNormalization_X_mul (t : σ) (P : MvPolynomial σ R) :
   induction P using MvPolynomial.induction_on' with
   | add p q hp hq => rw [mul_add, map_add, hp, hq, map_add, map_add]
   | monomial α c =>
-    rw [X, monomial_mul, factorialNormalization_monomial, factorialNormalization_monomial,
+    rw [X, monomial_mul_monomial, factorialNormalization_monomial, factorialNormalization_monomial,
       antiderivative_monomial', one_mul, add_comm (Finsupp.single t 1) α, Finsupp.add_apply,
       Finsupp.single_eq_same, mul_assoc, ← map_mul]
     congr 3
@@ -821,7 +821,7 @@ private lemma weight_eq {R σ : Type*} [CommSemiring R] (N : ℕ) (A B : ℕ →
 private lemma divX_rename_some {R σ : Type*} [CommSemiring R] (g : MvPolynomial σ R) :
     divX none (rename (some : σ → Option σ) g) = 0 := by
   ext α
-  rw [divX, coeff_divMonomial, coeff_zero]
+  rw [divX, coeff_divMonomial, AddMonoidAlgebra.coeff_zero, Finsupp.coe_zero, Pi.zero_apply]
   refine coeff_rename_eq_zero _ _ _ fun u hu => ?_
   have := congrArg (· none) hu
   simp [Finsupp.mapDomain_of_notMem_range] at this
@@ -833,14 +833,14 @@ private lemma divX_X_pow_mul_rename {R σ : Type*} [CommSemiring R] (k : ℕ)
       if k = 0 then 0 else X none ^ (k - 1) * rename some g := by
   rcases k with _ | k
   · simp [divX_rename_some]
-  · rw [if_neg k.succ_ne_zero, Nat.add_sub_cancel, pow_succ', mul_assoc, divX, X,
+  · rw [ite_eq_right k.succ_ne_zero, Nat.add_sub_cancel, pow_succ', mul_assoc, divX, X,
       divMonomial_monomial_mul]
 
 private lemma divX_sum {R σ ι : Type*} [CommSemiring R] (s : Finset ι)
     (f : ι → MvPolynomial (Option σ) R) :
     divX none (∑ i ∈ s, f i) = ∑ i ∈ s, divX none (f i) := by
   ext α
-  simp [coeff_divMonomial, coeff_sum]
+  simp [coeff_divMonomial]
 
 /-- `δ_t P` is the sum over the open pairs with `O ≠ ∅` of `t ^ (|O| - 1)` times the `t`-free
 factor. -/
@@ -853,7 +853,7 @@ private lemma divX_vertexWeightedOpenPairPolynomial {R σ : Type*} [CommSemiring
   refine Finset.sum_congr rfl fun MO _ => ?_
   rw [weight_eq, divX_X_pow_mul_rename]
   by_cases h : MO.2.Nonempty
-  · rw [if_neg (Finset.card_ne_zero.mpr h), if_pos h]
+  · rw [ite_eq_right (Finset.card_ne_zero.mpr h), ite_eq_left h]
   · rw [Finset.not_nonempty_iff_eq_empty.mp h]
     simp
 
@@ -1218,10 +1218,10 @@ private lemma sum_case_matched {R σ : Type*} [CommSemiring R] {N : ℕ}
     obtain ⟨a, ha, hsup⟩ := Finset.exists_mem_eq_sup O hne id
     simp only [hsup, id]
     have h1 : (insert (a, N + 1) M).filter (·.2 ≠ N + 1) = M := by
-      rw [Finset.filter_insert, if_neg (by simp)]
+      rw [Finset.filter_insert, ite_eq_right (by simp)]
       exact Finset.filter_true_of_mem (snd_ne_succ_of_isOpenPair h)
     have h2 : (insert (a, N + 1) M).filter (·.2 = N + 1) = {(a, N + 1)} := by
-      rw [Finset.filter_insert, if_pos rfl,
+      rw [Finset.filter_insert, ite_eq_left rfl,
         Finset.filter_false_of_mem (snd_ne_succ_of_isOpenPair h)]
       rfl
     simp only [h1, h2, Finset.sup_singleton, Finset.insert_erase ha]

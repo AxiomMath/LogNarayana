@@ -220,7 +220,7 @@ private lemma not_isRealStable_aux (hspec : IsRealStableSpecializeClosed (Fin 3)
       Polynomial.toMvPolynomial 0 (Polynomial.X ^ 2 + Polynomial.X + 1) := by
     simp
   rcases hspec _ hF 2 0 with h1 | h1 <;> rw [e1] at h1
-  · have := congrArg (MvPolynomial.coeff (Finsupp.single 1 2)) h1
+  · have := congrArg (·.coeff (Finsupp.single 1 2)) h1
     simp [MvPolynomial.coeff_X_pow, MvPolynomial.coeff_X_mul', Finsupp.single_eq_single_iff]
       at this
   rcases hspec _ h1 1 1 with h2 | h2
@@ -304,7 +304,7 @@ private lemma narayanaTransform_validCompositionPoly_2135467 :
         MvPolynomial.X 2 * (MvPolynomial.X 0 + MvPolynomial.X 1)) =
       X ^ 2 * (5 + 12 * X + 5 * X ^ 2) := by
   simp only [mul_add, MvPolynomial.X_pow_eq_monomial]
-  simp only [MvPolynomial.X, MvPolynomial.monomial_mul,
+  simp only [MvPolynomial.X, MvPolynomial.monomial_mul_monomial,
     one_mul, map_add, narayanaTransform_monomial_one_fintype, Fin.prod_univ_three]
   simp [shiftedNarayanaPolynomial_zero, shiftedNarayanaPolynomial_one,
     shiftedNarayanaPolynomial_two]

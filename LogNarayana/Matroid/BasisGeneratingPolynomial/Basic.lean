@@ -137,7 +137,7 @@ private lemma prod_X_eq_monomial_sum_single_one {R : Type*} [CommSemiring R] (B 
   induction B using Finset.induction_on with
   | empty => simp
   | insert a s ha ih =>
-    rw [Finset.prod_insert ha, Finset.sum_insert ha, ih, X, monomial_mul, one_mul]
+    rw [Finset.prod_insert ha, Finset.sum_insert ha, ih, X, monomial_mul_monomial, one_mul]
 
 /-- The indicator vectors `𝟏_B = ∑ e ∈ B, e_e` of the bases `B` of a matroid on a finite ground
 set form an M-convex set. -/

@@ -91,14 +91,14 @@ private lemma esymm_add (s t : Multiset R) (n : ℕ) :
   induction t using Multiset.induction_on generalizing n with
   | empty =>
     rw [add_zero, sum_eq_single_of_mem (n, 0) (by simp)]
-    · simp [esymm_zero_eq_one]
+    · simp
     · rintro ⟨i, _ | j⟩ _ hne
       · simp_all
       · exact mul_zero _
   | cons a t ih =>
     rw [Multiset.add_cons]
     cases n with
-    | zero => simp [esymm_zero_eq_one]
+    | zero => simp
     | succ n =>
       rw [esymm_cons_succ, ih, ih, Nat.sum_antidiagonal_succ', Nat.sum_antidiagonal_succ']
       simp only [esymm_zero_eq_one, esymm_cons_succ, mul_add, sum_add_distrib, mul_sum]
@@ -163,8 +163,8 @@ coefficients of the elementary kernel `K_m(z, t)`. -/
 @[lognarayana "lem_elementary_kernel_limit"]
 public theorem tendsto_coeff_elementaryKernelApproximant (σ : Type*) [Fintype σ] (m : ℕ)
     (d : Option σ →₀ ℕ) :
-    Tendsto (fun k : ℕ => coeff d (elementaryKernelApproximant σ ℝ m k)) atTop
-      (𝓝 (coeff d (elementaryKernel σ ℝ m))) := by
+    Tendsto (fun k : ℕ => (elementaryKernelApproximant σ ℝ m k).coeff d) atTop
+      (𝓝 ((elementaryKernel σ ℝ m).coeff d)) := by
   simp only [elementaryKernelApproximant_eq_sum, elementaryKernel_eq_sum, coeff_sum,
     coeff_C_mul]
   exact tendsto_finsetSum _ fun j _ => (tendsto_choose_mul_inv_pow (m - j)).mul_const _
@@ -478,7 +478,7 @@ private lemma eq_single_none_add_mapDomain_some (e : Option σ →₀ ℕ) :
     e = Finsupp.single none (e none) + e.some.mapDomain some := by
   ext (_ | i)
   · simp [Finsupp.mapDomain_of_notMem_range]
-  · simp [Finsupp.mapDomain_apply (Option.some_injective σ)]
+  · simp [Finsupp.mapDomain_apply_of_injective (Option.some_injective σ)]
 
 private lemma single_none_add_mapDomain_some_apply_none (h : ℕ) (α : σ →₀ ℕ) :
     (Finsupp.single none h + α.mapDomain some : Option σ →₀ ℕ) none = h := by
@@ -487,12 +487,12 @@ private lemma single_none_add_mapDomain_some_apply_none (h : ℕ) (α : σ →�
 private lemma some_single_none_add_mapDomain_some (h : ℕ) (α : σ →₀ ℕ) :
     (Finsupp.single none h + α.mapDomain some).some = α := by
   ext i
-  simp [Finsupp.mapDomain_apply (Option.some_injective σ)]
+  simp [Finsupp.mapDomain_apply_of_injective (Option.some_injective σ)]
 
 private lemma monomial_single_none_add_mapDomain_some (h : ℕ) (α : σ →₀ ℕ) (c : R) :
     monomial (Finsupp.single none h + α.mapDomain some) c =
       rename some (monomial α c) * X none ^ h := by
-  rw [rename_monomial, X_pow_eq_monomial, monomial_mul, mul_one, add_comm]
+  rw [rename_monomial, X_pow_eq_monomial, monomial_mul_monomial, mul_one, add_comm]
 
 private lemma pderiv_none_rename_mul_C_mul_X_pow (f : MvPolynomial σ R) (a : ℕ) (c : R) :
     pderiv none (rename some f * (C c * X none ^ a)) =
@@ -553,7 +553,7 @@ private lemma rename_monomial_mul_C_mul (γ : σ →₀ ℕ) (a b : R) (e : ℕ)
 private lemma rename_monomial_mul_rename_monomial_mul (α β : σ →₀ ℕ) (a b : R) (e : ℕ) :
     rename some (monomial β a) * (rename some (monomial α 1) * (C b * X none ^ e)) =
       rename some (monomial (α + β) (a * b)) * X none ^ e := by
-  rw [rename_monomial_mul_C_mul, ← mul_assoc, ← map_mul, monomial_mul, one_mul, add_comm β]
+  rw [rename_monomial_mul_C_mul, ← mul_assoc, ← map_mul, monomial_mul_monomial, one_mul, add_comm β]
 
 private lemma cast_descFactorial {n k : ℕ} (hk : k ≤ n) :
     (n.descFactorial k : ℚ) = n.factorial / (n - k).factorial := by
@@ -604,15 +604,15 @@ private lemma higherKernelOperator_monomial_monomial [Algebra ℚ R] {m k : ℕ}
   simp only [monomial_single_none_add_mapDomain_some, antiderivative_none_rename_mul_X_pow,
     iterate_pderiv_none_rename_mul_X_pow]
   rcases (show k = m ∨ k = m - 1 ∨ k + 2 ≤ m by omega) with rfl | rfl | hk2
-  · rw [if_pos (by simp), if_neg (by omega), Finset.sum_eq_zero (fun j hj => by
-      rw [if_neg (by simp at hj; omega)]; simp)]
+  · rw [ite_eq_left (by simp), ite_eq_right (by omega), Finset.sum_eq_zero (fun j hj => by
+      rw [ite_eq_right (by simp at hj; omega)]; simp)]
     simp only [map_zero, zero_mul, add_zero]
     rw [rename_monomial_mul_rename_monomial_mul, show h + k + 1 - k = h + 1 by omega]
     congr 2
     rw [← map_natCast (algebraMap ℚ R), ← map_natCast (algebraMap ℚ R), ← map_mul, ← map_mul,
       beta_mul_descFactorial_self, Nat.sub_zero]
-  · rw [if_neg (by omega), if_pos rfl, Finset.sum_eq_zero (fun j hj => by
-      rw [if_neg (by simp at hj; omega)]; simp)]
+  · rw [ite_eq_right (by omega), ite_eq_left rfl, Finset.sum_eq_zero (fun j hj => by
+      rw [ite_eq_right (by simp at hj; omega)]; simp)]
     simp only [map_zero, zero_mul, zero_add, add_zero]
     rw [← one_mul (X none ^ h), ← C_1, rename_monomial_mul_rename_monomial_mul,
       show h + (m - 1) + 1 - m = h by omega]
@@ -620,10 +620,10 @@ private lemma higherKernelOperator_monomial_monomial [Algebra ℚ R] {m k : ℕ}
     rw [← map_natCast (algebraMap ℚ R), ← map_natCast (algebraMap ℚ R), ← map_mul, mul_one,
       beta_mul_descFactorial (by omega), show m - (m - 1) - 1 = 0 by omega]
     simp
-  · rw [if_neg (by omega), if_neg (by omega), Finset.sum_eq_single (m - k)
-      (fun j hj hne => by rw [if_neg (by simp at hj; omega)]; simp)
+  · rw [ite_eq_right (by omega), ite_eq_right (by omega), Finset.sum_eq_single (m - k)
+      (fun j hj hne => by rw [ite_eq_right (by simp at hj; omega)]; simp)
       (fun hn => absurd (Finset.mem_Icc.mpr ⟨by omega, by omega⟩) hn),
-      if_pos (by omega), show m - (m - k) = k by omega]
+      ite_eq_left (by omega), show m - (m - k) = k by omega]
     simp only [map_zero, zero_mul, zero_add]
     rw [rename_monomial_mul_rename_monomial_mul, show h - (m - k - 1) = h + k + 1 - m by omega]
     congr 2
@@ -663,7 +663,7 @@ private lemma higherKernelOperator_monomial [Algebra ℚ R] {m : ℕ} (hm : 1 �
     simp [RK, LinearMap.sum_apply]
   rw [hL, hR, K.as_sum, map_sum, map_sum]
   refine Finset.sum_congr rfl fun u hu => ?_
-  rw [← mul_one (coeff u K), ← smul_eq_mul, ← smul_monomial, map_smul, map_smul]
+  rw [← mul_one (K.coeff u), ← smul_eq_mul, ← smul_monomial, map_smul, map_smul]
   congr 1
   rw [← hL, ← hR, eq_single_none_add_mapDomain_some u]
   exact higherKernelOperator_monomial_monomial hm ((monomial_le_degreeOf none hu).trans hK) h α _

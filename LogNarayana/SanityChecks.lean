@@ -99,7 +99,7 @@ lemma narayanaTransform_monomial {σ : Type*} (α : σ →₀ ℕ) :
 lemma coeff_narayanaPolynomial {q : ℕ} (hq : q ≠ 0) (j : ℕ) :
     (narayanaPolynomial q).coeff j =
       if j ∈ Finset.Icc 1 q then (q : ℝ)⁻¹ * (q.choose j : ℝ) * (q.choose (j - 1) : ℝ) else 0 := by
-  rw [narayanaPolynomial, if_neg hq, finsetSum_coeff]
+  rw [narayanaPolynomial, ite_eq_right hq, finsetSum_coeff]
   simp only [coeff_C_mul, coeff_X_pow, mul_ite, mul_one, mul_zero]
   rw [Finset.sum_ite_eq]
 
@@ -246,7 +246,7 @@ theorem sanity_narayanaTransform :
     · rw [sanity_shifted_two]
       ring
     · exact sanity_shifted_zero
-  · rw [MvPolynomial.X_pow_eq_monomial, MvPolynomial.X, MvPolynomial.monomial_mul, one_mul,
+  · rw [MvPolynomial.X_pow_eq_monomial, MvPolynomial.X, MvPolynomial.monomial_mul_monomial, one_mul,
       narayanaTransform_monomial, Finsupp.prod_fintype _ _ (fun _ => sanity_shifted_zero),
       Fin.prod_univ_two]
     simp [sanity_shifted_one, sanity_shifted_two]
@@ -668,8 +668,8 @@ lemma narayanaPolynomial_succ (m : ℕ) :
   · rw [coeff_X_mul, coeff_shiftedNarayanaPolynomial]
     simp only [Finset.mem_Icc, Finset.mem_range, Nat.add_sub_cancel]
     by_cases h : j < m + 1
-    · rw [if_pos (by omega), if_pos h]
-    · rw [if_neg (by omega), if_neg h]
+    · rw [ite_eq_left (by omega), ite_eq_left h]
+    · rw [ite_eq_right (by omega), ite_eq_right h]
 
 /-- All ten vertices `v_S` (`|S| = 2`) have positive integer coordinates with sum `51`. -/
 theorem sanity_nlcVertex :
@@ -719,10 +719,10 @@ theorem sanity_nlc_coeffs :
   have c0 : (shiftedNarayanaPolynomial 22).coeff 0 = 1 := by
     rw [coeff_shiftedNarayanaPolynomial]; norm_num [Nat.choose_one_right]
   have c1 : (shiftedNarayanaPolynomial 22).coeff 1 = 253 := by
-    rw [coeff_shiftedNarayanaPolynomial, if_pos (by simp),
+    rw [coeff_shiftedNarayanaPolynomial, ite_eq_left (by simp),
       show (23 : ℕ).choose 2 = 253 by decide]; norm_num
   have c2 : (shiftedNarayanaPolynomial 22).coeff 2 = 19481 := by
-    rw [coeff_shiftedNarayanaPolynomial, if_pos (by simp),
+    rw [coeff_shiftedNarayanaPolynomial, ite_eq_left (by simp),
       show (23 : ℕ).choose 3 = 1771 by decide, show (23 : ℕ).choose 2 = 253 by decide]; norm_num
   rw [e, h9]
   simp only [coeff_add, coeff_C_mul, coeff_X_mul, coeff_X_mul_zero, coeff_one_add_X_pow, c0, c1, c2]
@@ -887,14 +887,14 @@ theorem iteratedPDeriv_monomial (α β : σ →₀ ℕ) (c : ℝ) :
 
 /-- The constant coefficient of `∂^γ f` is `γ!` times the coefficient of `z^γ` in `f`. -/
 theorem constantCoeff_iteratedPDeriv (γ : σ →₀ ℕ) (f : MvPolynomial σ ℝ) :
-    constantCoeff (iteratedPDeriv γ f) = coeff γ f * γ.factorial := by
+    constantCoeff (iteratedPDeriv γ f) = f.coeff γ * γ.factorial := by
   classical
   refine MvPolynomial.induction_on' f (fun β c => ?_) (fun p q hp hq => ?_)
   · rw [iteratedPDeriv_monomial, constantCoeff_monomial, MvPolynomial.coeff_monomial]
     by_cases hβ : β = γ
     · subst hβ
       simp
-    · rw [if_neg hβ, zero_mul]
+    · rw [ite_eq_right hβ, zero_mul]
       split_ifs with h1 h2
       · exact absurd (le_antisymm (tsub_eq_zero_iff_le.mp h1) h2) hβ
       · simp
@@ -912,7 +912,7 @@ theorem iteratedPDeriv_zero (f : MvPolynomial σ ℝ) : iteratedPDeriv 0 f = f :
 times `(e_i + e_j)!`. -/
 theorem hessianAtZero_apply (f : MvPolynomial σ ℝ) (i j : σ) :
     hessianAtZero f i j =
-      coeff (Finsupp.single i 1 + Finsupp.single j 1) f *
+      f.coeff (Finsupp.single i 1 + Finsupp.single j 1) *
         (Finsupp.single i 1 + Finsupp.single j 1).factorial := by
   simp [hessianAtZero, constantCoeff_iteratedPDeriv]
 
@@ -1013,11 +1013,11 @@ theorem X_zero_mul_X_one :
     (X 0 * X 1 : MvPolynomial (Fin 2) ℝ) =
       monomial (Finsupp.single 0 1 + Finsupp.single 1 1) 1 := by
   change monomial _ 1 * monomial _ 1 = _
-  rw [monomial_mul, one_mul]
+  rw [monomial_mul_monomial, one_mul]
 
 /-- The coefficient of `z^α` in `z₀ z₁` is `1` if `α = (1, 1)`, and `0` otherwise. -/
 theorem coeff_X_zero_mul_X_one (α : Fin 2 →₀ ℕ) :
-    coeff α (X 0 * X 1 : MvPolynomial (Fin 2) ℝ) = if α 0 = 1 ∧ α 1 = 1 then 1 else 0 := by
+    (X 0 * X 1 : MvPolynomial (Fin 2) ℝ).coeff α = if α 0 = 1 ∧ α 1 = 1 then 1 else 0 := by
   rw [X_zero_mul_X_one, MvPolynomial.coeff_monomial]
   simp only [finsupp_fin_two_eq_iff]
   simp [eq_comm]
@@ -1025,7 +1025,7 @@ theorem coeff_X_zero_mul_X_one (α : Fin 2 →₀ ℕ) :
 /-- The coefficient of `z^α` in `z_i²` is `1` if `α i = 2` and the other coordinate is `0`, and
 `0` otherwise. -/
 theorem coeff_X_sq (i : Fin 2) (α : Fin 2 →₀ ℕ) :
-    coeff α (X i ^ 2 : MvPolynomial (Fin 2) ℝ) =
+    (X i ^ 2 : MvPolynomial (Fin 2) ℝ).coeff α =
       if α i = 2 ∧ α (1 - i) = 0 then 1 else 0 := by
   rw [X_pow_eq_monomial, MvPolynomial.coeff_monomial]
   simp only [finsupp_fin_two_eq_iff]
@@ -1033,29 +1033,31 @@ theorem coeff_X_sq (i : Fin 2) (α : Fin 2 →₀ ℕ) :
 
 /-- The coefficients of `(z₀ + z₁)²` are `1, 2, 1` at the exponents `(2, 0), (1, 1), (0, 2)`. -/
 theorem coeff_add_sq (α : Fin 2 →₀ ℕ) :
-    coeff α ((X 0 + X 1) ^ 2 : MvPolynomial (Fin 2) ℝ) =
+    ((X 0 + X 1) ^ 2 : MvPolynomial (Fin 2) ℝ).coeff α =
       (if α 0 = 2 ∧ α 1 = 0 then 1 else 0) + 2 * (if α 0 = 1 ∧ α 1 = 1 then 1 else 0) +
         (if α 1 = 2 ∧ α 0 = 0 then 1 else 0) := by
   have e : ((X 0 + X 1) ^ 2 : MvPolynomial (Fin 2) ℝ) =
       X 0 ^ 2 + C 2 * (X 0 * X 1) + X 1 ^ 2 := by
     simp only [map_ofNat]
     ring
-  rw [e, coeff_add, coeff_add, coeff_C_mul, coeff_X_sq, coeff_X_sq, coeff_X_zero_mul_X_one]
+  rw [e, AddMonoidAlgebra.coeff_add, AddMonoidAlgebra.coeff_add, Finsupp.add_apply,
+    Finsupp.add_apply, coeff_C_mul, coeff_X_sq, coeff_X_sq, coeff_X_zero_mul_X_one]
   simp
 
 /-- The coefficients of `z₀² + z₀ z₁ + z₁²` are `1` at the exponents `(2, 0), (1, 1), (0, 2)`. -/
 theorem coeff_sq_add_mul_add_sq (α : Fin 2 →₀ ℕ) :
-    coeff α (X 0 ^ 2 + X 0 * X 1 + X 1 ^ 2 : MvPolynomial (Fin 2) ℝ) =
+    (X 0 ^ 2 + X 0 * X 1 + X 1 ^ 2 : MvPolynomial (Fin 2) ℝ).coeff α =
       (if α 0 = 2 ∧ α 1 = 0 then 1 else 0) + (if α 0 = 1 ∧ α 1 = 1 then 1 else 0) +
         (if α 1 = 2 ∧ α 0 = 0 then 1 else 0) := by
-  rw [coeff_add, coeff_add, coeff_X_sq, coeff_X_sq, coeff_X_zero_mul_X_one]
+  rw [AddMonoidAlgebra.coeff_add, Finsupp.add_apply, AddMonoidAlgebra.coeff_add, Finsupp.add_apply,
+    coeff_X_sq, coeff_X_sq, coeff_X_zero_mul_X_one]
   simp
 
 /-- The coefficients of `z₀² + z₁²` are `1` at the exponents `(2, 0)` and `(0, 2)`. -/
 theorem coeff_sq_add_sq (α : Fin 2 →₀ ℕ) :
-    coeff α (X 0 ^ 2 + X 1 ^ 2 : MvPolynomial (Fin 2) ℝ) =
+    (X 0 ^ 2 + X 1 ^ 2 : MvPolynomial (Fin 2) ℝ).coeff α =
       (if α 0 = 2 ∧ α 1 = 0 then 1 else 0) + (if α 1 = 2 ∧ α 0 = 0 then 1 else 0) := by
-  rw [coeff_add, coeff_X_sq, coeff_X_sq]
+  rw [AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_X_sq, coeff_X_sq]
   simp
 
 /-- `(z₀ + z₁)²` is Lorentzian. -/
@@ -1110,8 +1112,8 @@ theorem sanity_not_isLorentzian_sq_add_sq :
     ¬ (X 0 ^ 2 + X 1 ^ 2 : MvPolynomial (Fin 2) ℝ).IsLorentzian := by
   apply not_isLorentzian_of_not_mconvex
   · intro h
-    have := congrArg (coeff (Finsupp.single 0 2)) h
-    rw [coeff_sq_add_sq, coeff_zero] at this
+    have := congrArg (·.coeff (Finsupp.single 0 2)) h
+    rw [coeff_sq_add_sq, AddMonoidAlgebra.coeff_zero, Finsupp.coe_zero, Pi.zero_apply] at this
     simp at this
   · exact (isHomogeneous_X_pow _ _).add (isHomogeneous_X_pow _ _)
   · rintro ⟨-, -, -, h⟩
@@ -1129,8 +1131,9 @@ theorem sanity_not_isLorentzian_sq_add_mul_add_sq :
     ¬ (X 0 ^ 2 + X 0 * X 1 + X 1 ^ 2 : MvPolynomial (Fin 2) ℝ).IsLorentzian := by
   apply not_isLorentzian_of_two_le_posIndex
   · intro h
-    have := congrArg (coeff (Finsupp.single 0 2)) h
-    rw [coeff_sq_add_mul_add_sq, coeff_zero] at this
+    have := congrArg (·.coeff (Finsupp.single 0 2)) h
+    rw [coeff_sq_add_mul_add_sq, AddMonoidAlgebra.coeff_zero, Finsupp.coe_zero,
+      Pi.zero_apply] at this
     simp at this
   · exact ((isHomogeneous_X_pow _ _).add
       ((isHomogeneous_X ℝ (0 : Fin 2)).mul (isHomogeneous_X ℝ 1))).add (isHomogeneous_X_pow _ _)
@@ -1158,10 +1161,10 @@ theorem sanity_isLorentzian_C_three : (C 3 : MvPolynomial (Fin 2) ℝ).IsLorentz
 /-- `z₀ - z₁` is not Lorentzian, having a negative coefficient. -/
 theorem sanity_not_isLorentzian_X_sub_X :
     ¬ (X 0 - X 1 : MvPolynomial (Fin 2) ℝ).IsLorentzian := by
-  have hc : coeff (Finsupp.single 1 1) (X 0 - X 1 : MvPolynomial (Fin 2) ℝ) = -1 := by
+  have hc : (X 0 - X 1 : MvPolynomial (Fin 2) ℝ).coeff (Finsupp.single 1 1) = -1 := by
     simp [coeff_X, Finsupp.single_eq_single_iff]
   rintro (h | ⟨d, -, hn, -⟩)
-  · rw [h, coeff_zero] at hc
+  · rw [h, AddMonoidAlgebra.coeff_zero, Finsupp.coe_zero, Pi.zero_apply] at hc
     norm_num at hc
   · have := hn (Finsupp.single 1 1)
     rw [hc] at this
@@ -1249,7 +1252,7 @@ theorem sanity_univ_eq_image (s : Finset ℕ) :
     obtain ⟨x, hx, hxt⟩ := P.part_surjOn ht
     exact ⟨x, hx, hxt⟩
   unfold ofFibres
-  rw [dif_pos (by rw [hps]; exact ⟨P.sup_parts, P.bot_notMem, P.supIndep⟩)]
+  rw [dite_eq_left (by rw [hps]; exact ⟨P.sup_parts, P.bot_notMem, P.supIndep⟩)]
   ext t
   simp only [hps]
 
@@ -1659,7 +1662,7 @@ theorem sanity_schurPolynomial_row2 :
       MvPolynomial.monomial (Finsupp.single 0 2) 1 := MvPolynomial.X_pow_eq_monomial
   have e2 : (MvPolynomial.X 0 * MvPolynomial.X 1 : MvPolynomial (Fin 2) ℝ) =
       MvPolynomial.monomial (Finsupp.single 0 1 + Finsupp.single 1 1) 1 := by
-    rw [MvPolynomial.X, MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]
+    rw [MvPolynomial.X, MvPolynomial.X, MvPolynomial.monomial_mul_monomial, one_mul]
   have e3 : (MvPolynomial.X 1 : MvPolynomial (Fin 2) ℝ) ^ 2 =
       MvPolynomial.monomial (Finsupp.single 1 2) 1 := MvPolynomial.X_pow_eq_monomial
   rw [e1, e2, e3]

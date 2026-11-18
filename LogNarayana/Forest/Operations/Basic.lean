@@ -111,7 +111,7 @@ private lemma iterate_forestConcatParent_of_le {N : ℕ} {par par' : ℕ → Opt
     rintro (_ | w) ho
     · simp [iterate_bind_none]
     · have hw : w ≤ N := ho w rfl
-      simp only [Function.iterate_succ_apply, Option.bind_some, forestConcatParent, hw, if_true]
+      simp only [Function.iterate_succ_apply, Option.bind_some, forestConcatParent, hw, ite_true]
       exact ih _ fun x hx => (hpar w x hx).2.2
 
 /-- Iterating the concatenated parent map on `N + ·` shifts the iterates of `par'`. -/
@@ -350,7 +350,7 @@ private lemma iterate_of_iterate_forestAdjoinRootParent {N : ℕ} {par : ℕ →
       rcases ih x hx with hf | rfl
       · have hxN := (iterate_forestAdjoinRootParent_of_iterate hpar hu k x hf).1
         rw [hf, Option.bind_some]
-        simp only [forestAdjoinRootParent, hxN, and_self, if_true, Option.some.injEq] at h
+        simp only [forestAdjoinRootParent, hxN, and_self, ite_true, Option.some.injEq] at h
         cases hp : par x <;> simp_all [eq_comm]
       · simp [forestAdjoinRootParent] at h
 
@@ -648,7 +648,7 @@ private lemma isPostorderForest_delete_root {k : ℕ} {par : ℕ → Option ℕ}
     exact h
   · have := hpar.1 _ _ h
     refine ⟨by omega, ?_⟩
-    rw [if_neg (by rw [h]; intro h'; simp at h'; omega)]
+    rw [ite_eq_right (by rw [h]; intro h'; simp at h'; omega)]
     exact h
   · split_ifs at h with hk
     have := hpar.1 _ _ h
@@ -663,7 +663,7 @@ private lemma isPostorderForest_shift {N M : ℕ} {par : ℕ → Option ℕ}
     IsPostorderForest (N - M) (fun u => if 1 ≤ u then (par (M + u)).map (· - M) else none) := by
   classical
   set parG : ℕ → Option ℕ := fun u => if 1 ≤ u then (par (M + u)).map (· - M) else none
-  have hG : ∀ u, 1 ≤ u → parG u = (par (M + u)).map (· - M) := fun u hu => if_pos hu
+  have hG : ∀ u, 1 ≤ u → parG u = (par (M + u)).map (· - M) := fun u hu => ite_eq_left hu
   have hpmG : IsParentMap (N - M) parG := by
     intro u p h
     simp only [parG] at h
@@ -713,8 +713,8 @@ private lemma eq_forestConcatParent_restrict_shift {N M : ℕ} {par : ℕ → Op
   funext v
   simp only [forestConcatParent]
   by_cases hv : v ≤ M
-  · rw [if_pos hv, if_pos hv]
-  · rw [if_neg hv, if_pos (by omega), show M + (v - M) = v by omega]
+  · rw [ite_eq_left hv, ite_eq_left hv]
+  · rw [ite_eq_right hv, ite_eq_left (by omega), show M + (v - M) = v by omega]
     cases h : par v with
     | none => rfl
     | some p =>
@@ -888,7 +888,7 @@ private lemma exists_forestAdjoinRootParent_eq {N M : ℕ} {par parG : ℕ → O
   · obtain ⟨p, hp⟩ : ∃ p, parG v = some p := by
       obtain ⟨q, hq⟩ := exists_parent_of_isAncestorOrSelf
         ((hanc (M + v) (by omega) (by omega)).mpr (by omega)) (by omega)
-      rw [hparG, if_pos hv.1, hq]
+      rw [hparG, ite_eq_left hv.1, hq]
       exact ⟨_, rfl⟩
     rw [hpar₂, hp]
     split_ifs with h

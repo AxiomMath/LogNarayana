@@ -93,7 +93,7 @@ private lemma prod_comp_eq_prod_pow_card_fiber {ι σ M : Type*} [Fintype ι] [F
 words `q : Fin k → σ` in which each letter `j` occurs `s j` times. -/
 private lemma coeff_sum_X_pow_eq_card {σ : Type*} [Fintype σ] [DecidableEq σ] (k : ℕ)
     (s : σ →₀ ℕ) :
-    coeff s ((∑ j, X j : MvPolynomial σ ℕ) ^ k) =
+    ((∑ j, X j : MvPolynomial σ ℕ) ^ k).coeff s =
       #{q : Fin k → σ | ∀ j, #{i | q i = j} = s j} := by
   rw [← Fin.prod_const, Fintype.prod_sum, coeff_sum]
   simp_rw [prod_comp_eq_prod_pow_card_fiber X, coeff_prod_X_pow, card_eq_sum_ones, sum_filter]
@@ -104,9 +104,9 @@ private lemma coeff_sum_X_pow_eq_card {σ : Type*} [Fintype σ] [DecidableEq σ]
 coefficient of `s`, when `∑ⱼ s j = k`. -/
 private lemma coeff_sum_X_pow_eq_multinomial {σ : Type*} [Fintype σ] {k : ℕ}
     (s : σ →₀ ℕ) (hk : ∑ j, s j = k) :
-    coeff s ((∑ j, X j : MvPolynomial σ ℕ) ^ k) = Nat.multinomial univ s := by
+    ((∑ j, X j : MvPolynomial σ ℕ) ^ k).coeff s = Nat.multinomial univ s := by
   have := coeff_linearCombination_X_pow_of_fintype (R := ℕ) (fun _ => 1) s k
-  rw [if_pos (by rwa [Finsupp.sum_fintype _ _ (by simp)]),
+  rw [ite_eq_left (by rwa [Finsupp.sum_fintype _ _ (by simp)]),
     ← Finsupp.multinomial_of_support_subset (subset_univ _)] at this
   simpa [Finsupp.prod] using this
 
@@ -439,7 +439,7 @@ public theorem sum_noncrossing_X_pow_blockCount_eq_narayanaPolynomial
       simp [Finpartition.blockCount, Finpartition.parts_eq_empty_iff]
     simpa [narayanaPolynomial, h] using
       Finpartition.sum_noncrossing_prod_card_parts_eq hKr 0 0 (fun _ => X)
-  rw [narayanaPolynomial, if_neg hq.ne', ← sum_fiberwise_of_maps_to (t := Icc 1 q)
+  rw [narayanaPolynomial, ite_eq_right hq.ne', ← sum_fiberwise_of_maps_to (t := Icc 1 q)
     (g := Finpartition.blockCount) fun ρ _ => ?_]
   · simp_rw [filter_filter]
     exact sum_congr rfl fun k hk =>
@@ -964,22 +964,44 @@ section
 
 open Finset
 
-/-- The coordinate simplex on all coordinates is the standard simplex. -/
-private theorem coordSimplex_univ_eq_stdSimplex (ι : Type*) [Fintype ι] [DecidableEq ι] :
-    coordSimplex ℝ (Set.univ : Set ι) = stdSimplex ℝ ι := by
-  rw [coordSimplex, Set.image_univ, ← convexHull_basis_eq_stdSimplex]
-  congr 2
-  funext i j
-  simp [Pi.single_apply, eq_comm]
+/-- The coordinate simplex on all coordinates is the set of weight vectors of the standard
+simplex `Convexity.StdSimplex ℝ ι`. -/
+private theorem coordSimplex_univ_eq_range_weights (ι : Type*) [Finite ι] [DecidableEq ι] :
+    coordSimplex ℝ (Set.univ : Set ι) =
+      Set.range (fun t ↦ t.weights : Convexity.StdSimplex ℝ ι → ι → ℝ) := by
+  have := Fintype.ofFinite ι
+  rw [Convexity.StdSimplex.range_toFun_comp_weights, coordSimplex, Set.image_univ]
+  refine subset_antisymm (convexHull_min ?_ ?_) ?_
+  · rintro _ ⟨i, rfl⟩
+    refine ⟨Set.mem_iInter.2 fun j => ?_, ?_⟩
+    · simp only [Set.mem_ofPred_eq, Pi.single_apply]
+      split_ifs <;> norm_num
+    · simp
+  · refine (convex_iInter fun i => ?_).inter ?_
+    · exact convex_halfSpace_ge (f := fun s : ι → ℝ => s i) ⟨fun _ _ => rfl, fun _ _ => rfl⟩ 0
+    · exact convex_hyperplane (f := fun s : ι → ℝ => ∑ i, s i)
+        ⟨fun _ _ => Finset.sum_add_distrib, fun _ _ => by simp [Finset.mul_sum]⟩ 1
+  · rintro w ⟨hw₀, hw₁⟩
+    have hw₀' : ∀ i, 0 ≤ w i := fun i => Set.mem_iInter.1 hw₀ i
+    have hw₁' : ∑ i, w i = 1 := hw₁
+    rw [pi_eq_sum_univ w, ← Finset.univ.centerMass_eq_of_sum_1 _ hw₁']
+    refine Finset.univ.centerMass_mem_convexHull (fun i _ => hw₀' i) (hw₁'.symm ▸ zero_lt_one)
+      fun i _ => ⟨i, ?_⟩
+    funext j
+    simp [Pi.single_apply, eq_comm]
 
 /-- The standard simplex dilated by `c ≥ 0` and translated by `a • 1` is the set of vectors
 with all coordinates at least `a` and coordinate sum `a * card ι + c`. -/
-private theorem mem_image_stdSimplex_iff {ι : Type*} [Fintype ι] [Nonempty ι] (a : ℝ)
+private theorem mem_image_range_weights_iff {ι : Type*} [Fintype ι] [Nonempty ι] (a : ℝ)
     {c : ℝ} (hc : 0 ≤ c) (v : ι → ℝ) :
-    v ∈ (fun y : ι → ℝ => a • (1 : ι → ℝ) + c • y) '' stdSimplex ℝ ι ↔
+    v ∈ (fun y : ι → ℝ => a • (1 : ι → ℝ) + c • y) ''
+        Set.range (fun t ↦ t.weights : Convexity.StdSimplex ℝ ι → ι → ℝ) ↔
       (∀ i, a ≤ v i) ∧ ∑ i, v i = a * Fintype.card ι + c := by
+  rw [Convexity.StdSimplex.range_toFun_comp_weights]
   constructor
   · rintro ⟨y, ⟨hy0, hy1⟩, rfl⟩
+    replace hy0 : ∀ i, 0 ≤ y i := fun i => Set.mem_iInter.1 hy0 i
+    replace hy1 : ∑ i, y i = 1 := hy1
     refine ⟨fun i => ?_, ?_⟩
     · simpa using mul_nonneg hc (hy0 i)
     · simp [Finset.sum_add_distrib, ← Finset.mul_sum, hy1, mul_comm]
@@ -991,12 +1013,16 @@ private theorem mem_image_stdSimplex_iff {ι : Type*} [Fintype ι] [Nonempty ι]
         linarith [(Finset.sum_eq_zero_iff_of_nonneg fun i _ => sub_nonneg.mpr (hva i)).mp hs i
           (Finset.mem_univ i)]
       classical
-      refine ⟨Pi.single (Classical.arbitrary ι) 1, single_mem_stdSimplex ℝ _, ?_⟩
+      refine ⟨Pi.single (Classical.arbitrary ι) 1, ⟨Set.mem_iInter.2 fun j => ?_, by simp⟩, ?_⟩
+      · simp only [Set.mem_ofPred_eq, Pi.single_apply]
+        split_ifs <;> norm_num
       funext i
       simp [hv i]
-    · refine ⟨fun i => (v i - a) / c, ⟨fun i => div_nonneg (sub_nonneg.mpr (hva i)) hc.le, ?_⟩,
+    · refine ⟨fun i => (v i - a) / c,
+        ⟨Set.mem_iInter.2 fun i => div_nonneg (sub_nonneg.mpr (hva i)) hc.le, ?_⟩,
         funext fun i => ?_⟩
-      · rw [← Finset.sum_div, Finset.sum_sub_distrib, div_eq_one_iff_eq hc.ne', hvs]
+      · change ∑ i, (v i - a) / c = 1
+        rw [← Finset.sum_div, Finset.sum_sub_distrib, div_eq_one_iff_eq hc.ne', hvs]
         simp [mul_comm]
       · simp only [Pi.add_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul, mul_one]
         field_simp
@@ -1015,8 +1041,8 @@ public theorem latticePoints_image_smul_coordSimplex_univ {k : ℕ} (hk : 1 ≤ 
         {q : Fin k → ℤ | (∀ i, a ≤ q i) ∧ ∑ i, q i = a * k + c} := by
   have : Nonempty (Fin k) := ⟨⟨0, hk⟩⟩
   ext v
-  simp only [Set.latticePoints, coordSimplex_univ_eq_stdSimplex, Set.mem_ofPred_eq,
-    mem_image_stdSimplex_iff _ c.cast_nonneg, Fintype.card_fin]
+  simp only [Set.latticePoints, coordSimplex_univ_eq_range_weights, Set.mem_ofPred_eq,
+    mem_image_range_weights_iff _ c.cast_nonneg, Fintype.card_fin]
   constructor
   · rintro ⟨⟨hva, hvs⟩, hz⟩
     choose z hz using hz
@@ -1148,7 +1174,8 @@ private theorem nestohedron_insert_univ_singletons {k : ℕ} (hk : 1 ≤ k) {a c
           (by split_ifs <;> simp [hc]), ite_smul, ite_smul, Set.zero_smul_set (hne J hJ)]
     _ = _ := by
         rw [sum_add_distrib, sum_ite_mem, inter_eq_right.2 (subset_insert _ _),
-          sum_smul_coordSimplex_singletons, sum_ite_eq', if_pos (mem_insert_self _ _), coe_univ]
+          sum_smul_coordSimplex_singletons, sum_ite_eq', ite_eq_left (mem_insert_self _ _),
+          coe_univ]
 
 /-- For `a > 0` and `c ≥ 0`, the translate `a 𝟙 + c Δ` of the dilated standard simplex is a
 binary nestohedron: for `c = 0` it is `∑ᵢ a Δ_{{i}}`, and for `c > 0` it is
@@ -1164,9 +1191,9 @@ private theorem isBinaryNestohedron_singleton_add_smul_coordSimplex_univ {k : �
   · refine ⟨_, isBinaryBuildingSet_insert_univ_singletons hk, _, fun J hJ => ?_,
       (nestohedron_insert_univ_singletons hk ha.le hc.le).symm⟩
     rcases Finset.mem_insert.1 hJ with rfl | hJ
-    · rw [if_pos rfl]
+    · rw [ite_eq_left rfl]
       split_ifs <;> positivity
-    · rw [if_pos hJ]
+    · rw [ite_eq_left hJ]
       split_ifs <;> positivity
 
 /-- The extreme points of `a 𝟙 + c Δ` are among the points `a 𝟙 + c eⱼ`. -/

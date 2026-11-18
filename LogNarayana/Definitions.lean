@@ -1722,7 +1722,7 @@ D`, it is `y ^ D * f(z / y)`. -/
 public noncomputable def homogenize {R : Type*} [CommSemiring R] {σ : Type*}
     (f : MvPolynomial σ R) (D : ℕ) : MvPolynomial (Option σ) R :=
   ∑ α ∈ f.support with α.degree ≤ D,
-    monomial (α.mapDomain Option.some + Finsupp.single none (D - α.degree)) (coeff α f)
+    monomial (α.mapDomain Option.some + Finsupp.single none (D - α.degree)) (f.coeff α)
 
 /-- A real polynomial `f` is *real-stable* if `f(ζ) ≠ 0` for every `ζ : σ → ℂ` with `0 < (ζ i).im`
 for all `i`. -/

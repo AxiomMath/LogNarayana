@@ -581,7 +581,7 @@ private lemma familyFiberDescentPolynomial_blackTrees_eq_map [TreeColors C] (R :
   have := (mapRingHom (Nat.castRingHom R)).toAddMonoidHom.map_finsum_mem
     (fun 𝒯 : BinaryTree (ℕ × C) => (X : ℕ[X]) ^ (𝒯.map Prod.fst).inorder.numDescents)
     (finite_familyDecreasingLabelings_blackTrees π)
-  simp only [RingHom.toAddMonoidHom_eq_coe, AddMonoidHom.coe_coe, coe_mapRingHom,
+  simp only [RingHom.toAddMonoidHom_eq_coe, AddMonoidHom.coe_ofClass, coe_mapRingHom,
     Polynomial.map_pow, map_X] at this
   exact this.symm
 

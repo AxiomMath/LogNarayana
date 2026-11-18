@@ -239,8 +239,6 @@ private lemma condition_of_mem {r a d : ℕ} (hr : 1 ≤ r) {α : Fin r → ℕ}
   refine Eq.trans ?_ this.symm
   refine Finset.sum_congr rfl fun v _ => ?_
   congr 1
-  ext l
-  simp [f, Fin.ext_iff]
 
 /-- If `α ≥ a` coordinatewise and `|α| = a r + d`, the filling with `i` in row `i` of the first
 `a` columns and the letters `v` repeated `α v - a` times, in weakly increasing order, along the
@@ -285,14 +283,14 @@ private lemma exists_mem_of_condition {r a d : ℕ} (hr : 1 ≤ r) {α : Fin r �
         intro i j1 j2 hj hc
         obtain ⟨hi, hj2⟩ := mem_hook.1 hc
         have hj1 : j1 < (if i = 0 then a + d else a) := lt_trans hj hj2
-        simp only [e, hi, hj1, hj2, and_self, if_true]
+        simp only [e, hi, hj1, hj2, and_self, ite_true]
         by_cases hi0 : i = 0
         · subst hi0
-          simp only [if_true] at hj2 ⊢
+          simp only [ite_true] at hj2 ⊢
           by_cases hja : j1 < a
           · simp [hja]
           · have hja2 : ¬ j2 < a := by omega
-            simp only [hja, hja2, if_false]
+            simp only [hja, hja2, ite_false]
             rw [List.getD_eq_getElem _ _ (by omega), List.getD_eq_getElem _ _ (by omega)]
             exact hsorted.getElem_le_getElem_of_le (by omega)
         · simp [hi0]
@@ -300,24 +298,24 @@ private lemma exists_mem_of_condition {r a d : ℕ} (hr : 1 ≤ r) {α : Fin r �
         intro i1 i2 j hi hc
         obtain ⟨hi2, hj⟩ := mem_hook.1 hc
         have hi20 : i2 ≠ 0 := by omega
-        simp only [hi20, if_false] at hj
+        simp only [hi20, ite_false] at hj
         have hj1 : j < (if i1 = 0 then a + d else a) := by split_ifs <;> omega
-        simp only [e, hi2, hj, hj1, hi20, show i1 < r by omega, and_self, if_true, if_false]
+        simp only [e, hi2, hj, hj1, hi20, show i1 < r by omega, and_self, ite_true, ite_false]
         split_ifs <;> omega
       zeros' := by
         intro i j hc
         have : ¬ (i < r ∧ j < (if i = 0 then a + d else a)) := fun h => hc (mem_hook.2 h)
-        simp only [e, this, if_false] }
+        simp only [e, this, ite_false] }
   have hTe : ∀ i j, T i j = e i j := fun _ _ => rfl
   have hT : T ∈ (hook r a d).semistandardYoungTableaux := by
     intro i j hc
     have hc' := mem_hook.1 hc
     rw [hTe]
-    simp only [e, hc', and_self, if_true]
+    simp only [e, hc', and_self, ite_true]
     split_ifs with h0 hja
     · omega
     · subst h0
-      simp only [if_true] at hc'
+      simp only [ite_true] at hc'
       rw [List.getD_eq_getElem _ _ (by omega)]
       exact hmemL _ (List.getElem_mem _)
     · exact hc'.1
@@ -327,8 +325,8 @@ private lemma exists_mem_of_condition {r a d : ℕ} (hr : 1 ≤ r) {α : Fin r �
     refine List.ext_getElem (by simp [hL]) fun n h1 h2 => ?_
     simp only [List.getElem_ofFn, hTe, e]
     simp only [List.length_ofFn] at h1
-    rw [if_pos ⟨hr, by simp; omega⟩]
-    simp only [if_true, show ¬ a + n < a by omega, if_false, Nat.add_sub_cancel_left]
+    rw [ite_eq_left ⟨hr, by simp; omega⟩]
+    simp only [ite_true, show ¬ a + n < a by omega, ite_false, Nat.add_sub_cancel_left]
     rw [List.getD_eq_getElem _ _ h2]
   rw [← count_ofFn, hofFn, hcount]
   have := hα v
@@ -370,7 +368,7 @@ private lemma prod_map_X {R σ : Type*} [CommSemiring R] [DecidableEq σ] (s : M
   induction s using Multiset.induction with
   | empty => simp
   | cons i s ih =>
-    rw [Multiset.map_cons, Multiset.prod_cons, ih, X, monomial_mul, one_mul,
+    rw [Multiset.map_cons, Multiset.prod_cons, ih, X, monomial_mul_monomial, one_mul,
       ← Multiset.singleton_add, Multiset.toFinsupp_add, Multiset.toFinsupp_singleton]
 
 /-- The monomial expansion of `h_n` in `r` variables: the sum of `z^β` over `|β| = n`. -/
@@ -449,7 +447,7 @@ public theorem schurPolynomial_hook (R : Type*) [CommSemiring R] {r : ℕ} (hr :
         split_ifs <;> simp, ← Finset.sum_filter,
     sum_filter_antidiagonalTuple_le, prod_X_pow, hsymm_eq_sum, Finset.mul_sum]
   refine Finset.sum_congr rfl fun β _ => ?_
-  rw [monomial_mul, one_mul]
+  rw [monomial_mul_monomial, one_mul]
   refine congrArg (monomial · (1 : R)) ?_
   ext
   simp
@@ -470,7 +468,7 @@ public theorem schurNarayanaTransform_hook {r : ℕ} (hr : 1 ≤ r) (a d : ℕ) 
   rw [schurNarayanaTransform, schurPolynomial_hook ℝ hr, hsymm_eq_sum, prod_X_pow, Finset.mul_sum,
     map_sum]
   refine Finset.sum_congr rfl fun b _ => ?_
-  rw [monomial_mul, one_mul, narayanaTransform_monomial_one,
+  rw [monomial_mul_monomial, one_mul, narayanaTransform_monomial_one,
     Finsupp.prod_fintype _ _ fun _ => shiftedNarayanaPolynomial_zero]
   simp
 
@@ -577,7 +575,7 @@ Schur polynomial `s_{(d)}` in `r` variables (the hook formula at `a = 0`). -/
 private lemma coeff_X_mul_shiftedNarayanaGenSeries_pow {r : ℕ} (hr : 1 ≤ r) (d : ℕ) :
     PowerSeries.coeff (d + r) ((PowerSeries.X * shiftedNarayanaGenSeries) ^ r) =
       (row r d).schurNarayanaTransform := by
-  rw [mul_pow, PowerSeries.coeff_X_pow_mul', if_pos (by omega), Nat.add_sub_cancel,
+  rw [mul_pow, PowerSeries.coeff_X_pow_mul', ite_eq_left (by omega), Nat.add_sub_cancel,
     coeff_pow_eq_sum_antidiagonalTuple, show row r d = hook r 0 d from rfl,
     schurNarayanaTransform_hook hr 0 d]
   simp [shiftedNarayanaGenSeries, PowerSeries.coeff_mk]

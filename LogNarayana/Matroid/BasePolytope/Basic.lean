@@ -348,7 +348,7 @@ private lemma homogenize_add {σ : Type*} (f g : MvPolynomial σ ℝ) (D : ℕ) 
     homogenize_eq_sum_of_subset f D Finset.subset_union_left,
     homogenize_eq_sum_of_subset g D Finset.subset_union_right, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun α _ => ?_
-  split_ifs <;> simp [coeff_add]
+  split_ifs <;> simp [AddMonoidAlgebra.coeff_add, Finsupp.add_apply]
 
 private lemma homogenize_sum {σ ι : Type*} (s : Finset ι) (f : ι → MvPolynomial σ ℝ) (D : ℕ) :
     (∑ i ∈ s, f i).homogenize D = ∑ i ∈ s, (f i).homogenize D := by
@@ -362,7 +362,7 @@ private lemma homogenize_monomial {σ : Type*} (α : σ →₀ ℕ) (c : ℝ) (D
       monomial (α.mapDomain Option.some + Finsupp.single none (D - α.degree)) c := by
   classical
   rw [homogenize_eq_sum_of_subset _ D (support_monomial_subset (a := c)),
-    Finset.sum_singleton, if_pos h, coeff_monomial, if_pos rfl]
+    Finset.sum_singleton, ite_eq_left h, coeff_monomial, ite_eq_left rfl]
 
 /-- The coefficients of `Ñ_n`. -/
 private noncomputable abbrev cf (n j : ℕ) : ℝ :=
@@ -378,8 +378,8 @@ private lemma X_pow_mul_aeval (n k : ℕ) :
   simp only [shiftedNarayanaPolynomial, map_sum, Finset.mul_sum]
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [map_mul, Polynomial.aeval_C, Polynomial.aeval_X_pow, algebraMap_eq, X_pow_eq_monomial,
-    X_pow_eq_monomial, C_mul_monomial, monomial_mul, add_comm (Finsupp.single (1 : Fin 2) k),
-    mul_one, one_mul]
+    X_pow_eq_monomial, C_mul_monomial, monomial_mul_monomial,
+    add_comm (Finsupp.single (1 : Fin 2) k), mul_one, one_mul]
 
 /-- The variable map `Option (Fin 2) → Fin 3`. -/
 private def φ : Option (Fin 2) → Fin 3 := fun o => o.elim 1 ![0, 2]
@@ -395,9 +395,9 @@ private lemma rename_homogenize (n k : ℕ) :
   rw [homogenize_monomial _ _ _ (by simp [map_add]; omega), rename_monomial,
     Polynomial.homogenize_C_mul, Polynomial.homogenize_X_pow hj]
   simp only [map_mul, map_pow, rename_X, rename_C]
-  simp only [X_pow_eq_monomial, monomial_mul, map_add,
+  simp only [X_pow_eq_monomial, monomial_mul_monomial, map_add,
     Finsupp.degree_single, Finsupp.mapDomain_add, Finsupp.mapDomain_single]
-  rw [← map_mul, ← map_mul, C_mul_monomial, monomial_mul, one_mul, mul_one, mul_one,
+  rw [← map_mul, ← map_mul, C_mul_monomial, monomial_mul_monomial, one_mul, mul_one, mul_one,
     show φ (some 0) = 0 from rfl, show φ (some 1) = 2 from rfl, show φ none = 1 from rfl,
     show (Fin.castSucc 0 : Fin 3) = 0 from rfl, show (Fin.castSucc 1 : Fin 3) = 1 from rfl,
     Nat.add_sub_add_right]
@@ -445,7 +445,7 @@ private lemma totalDegree_pencil_le (m : ℕ) : (pencil m).totalDegree ≤ m + 1
     (by simpa using totalDegree_X_pow_mul_aeval m 1)
 
 private lemma coeff_pencil_nonneg (m : ℕ) (α : Fin 2 →₀ ℕ) : 0 ≤ (pencil m).coeff α := by
-  rw [coeff_add]
+  rw [AddMonoidAlgebra.coeff_add, Finsupp.add_apply]
   exact add_nonneg (by simpa using coeff_X_pow_mul_aeval_nonneg (m + 1) 0 α)
     (by simpa using coeff_X_pow_mul_aeval_nonneg m 1 α)
 
@@ -558,7 +558,8 @@ private def nonnegCoeffs (τ : Type*) : Subsemiring (MvPolynomial τ ℝ) where
   carrier := {f | f.HasNonnegCoeffs}
   zero_mem' _ := by simp
   one_mem' α := by classical rw [coeff_one]; split_ifs <;> simp
-  add_mem' hf hg α := by rw [coeff_add]; exact add_nonneg (hf α) (hg α)
+  add_mem' hf hg α := by
+    rw [AddMonoidAlgebra.coeff_add, Finsupp.add_apply]; exact add_nonneg (hf α) (hg α)
   mul_mem' hf hg α := by
     classical
     rw [coeff_mul]; exact Finset.sum_nonneg fun _ _ => mul_nonneg (hf _) (hg _)
@@ -818,7 +819,7 @@ private lemma monomial_mul_basisGeneratingPolynomial (M : Matroid α) (a : α �
   rw [Matroid.basisGeneratingPolynomial, Finset.mul_sum]
   refine Finset.sum_congr rfl fun B _ => ?_
   rw [show ∏ e ∈ B, (X e : MvPolynomial α ℝ) = monomial (∑ e ∈ B, Finsupp.single e 1) 1 by
-    simp [MvPolynomial.X, ← monomial_sum_one], monomial_mul, one_mul]
+    simp [MvPolynomial.X, ← monomial_sum_one], MvPolynomial.monomial_mul_monomial, one_mul]
   refine congrArg (MvPolynomial.monomial · (1 : ℝ)) (Finsupp.ext fun i => ?_)
   simp [shiftExp_apply, Finsupp.single_apply]
 
@@ -854,8 +855,8 @@ private lemma narayanaTransform_sum_monomial_shiftExp (M : Matroid α) (a : α �
     Finsupp.prod_fintype _ _ fun _ => shiftedNarayanaPolynomial_zero, map_mul, map_prod, map_prod,
     ← Finset.prod_mul_prod_compl B]
   congr 1 <;> refine Finset.prod_congr rfl fun i hi => ?_
-  · rw [hom, shiftExp_apply, if_pos hi]
-  · rw [hom, shiftExp_apply, if_neg (Finset.mem_compl.mp hi), add_zero]
+  · rw [hom, shiftExp_apply, ite_eq_left hi]
+  · rw [hom, shiftExp_apply, ite_eq_right (Finset.mem_compl.mp hi), add_zero]
 
 end RealRooted
 
@@ -995,8 +996,8 @@ private lemma prod_narayanaPolynomial_floor_vertex {α : Type*} [Fintype α] [De
     Finset.prod_const, Finset.card_univ, map_mul, map_prod, aeval_homogShiftedNarayanaPolynomial,
     ← Finset.prod_mul_prod_compl B (fun i => shiftedNarayanaPolynomial (a i + _))]
   congr 2 <;> refine Finset.prod_congr rfl fun i hi => ?_
-  · rw [if_pos hi]
-  · rw [if_neg (Finset.mem_compl.mp hi), add_zero]
+  · rw [ite_eq_left hi]
+  · rw [ite_eq_right (Finset.mem_compl.mp hi), add_zero]
 
 end NarayanaSum
 

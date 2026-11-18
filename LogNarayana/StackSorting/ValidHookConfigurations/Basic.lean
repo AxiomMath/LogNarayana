@@ -306,12 +306,12 @@ private lemma uncovered_add_card_colours {π : List ℕ} (hπ : π.Nodup) {𝓗 
   by_cases hcov : ∃ p ∈ 𝓗, p.1 < u ∧ u < p.2
   · obtain ⟨t, ht, huniq⟩ := existsUnique_colour hπ h𝓗 hcov
     obtain ⟨p, hp, hpu⟩ := hcov
-    rw [if_neg fun h => h p hp hpu, zero_add, Finset.card_eq_one]
+    rw [ite_eq_right fun h => h p hp hpu, zero_add, Finset.card_eq_one]
     refine ⟨t, Finset.ext fun t' => ?_⟩
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
     exact ⟨huniq t', fun h => h ▸ ht⟩
   · push Not at hcov
-    rw [if_pos fun p hp h => (hcov p hp h.1).not_gt h.2, Finset.card_eq_zero.2]
+    rw [ite_eq_left fun p hp h => (hcov p hp h.1).not_gt h.2, Finset.card_eq_zero.2]
     refine Finset.filter_eq_empty_iff.2 fun t _ => ?_
     rintro ⟨p, hp, -, h1, h2, -⟩
     exact (hcov p hp h1).not_gt h2
@@ -333,7 +333,7 @@ public theorem mem_compositionTuple_of_mem_validCompositions {n : ℕ} (hn : 1 �
     refine Finset.sum_congr rfl fun u _ => ?_
     by_cases hu : u ∈ 𝓗.image Prod.snd
     · simp [hu]
-    simp only [hu, not_false_eq_true, true_and, if_true]
+    simp only [hu, not_false_eq_true, true_and, ite_true]
     rw [← Finset.card_filter]
     exact uncovered_add_card_colours hπ.1.1 h𝓗 u
   · -- position `1` is free and blue
@@ -652,7 +652,7 @@ private lemma numDescents_append_cons {L R : List ℕ} {m : ℕ} (hL : ∀ x ∈
     | nil =>
       simp only [nil_append] at ih
       simp only [cons_append, nil_append, numDescents_cons_cons, ih, numDescents_singleton,
-        numDescents_nil, if_neg (not_lt.2 ha.le)]
+        numDescents_nil, ite_eq_right (not_lt.2 ha.le)]
       omega
     | cons b L =>
       simp only [cons_append] at ih ⊢
@@ -784,7 +784,8 @@ private lemma sum_antidiagonal_fiberE (n : ℕ) :
   · simp [fiberE, shiftedNarayanaPolynomial_zero, shiftedNarayanaPolynomial_one]
     ring
   rw [Finset.Nat.sum_antidiagonal_succ']
-  simp only [fiberE, if_true, if_neg (Nat.succ_ne_zero _), pow_zero, pow_one, mul_one, one_mul]
+  simp only [fiberE, ite_true, ite_eq_right (Nat.succ_ne_zero _), pow_zero, pow_one, mul_one,
+      one_mul]
   rw [shiftedNarayanaPolynomial_add_two, Finset.mul_sum]
   have : ∑ x ∈ antidiagonal m,
       shiftedNarayanaPolynomial x.1 * shiftedNarayanaPolynomial x.2 * X =

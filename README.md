@@ -133,4 +133,4 @@ https://github.com/leanprover/comparator to install `comparator`. Then, run the 
 lake env comparator Comparator/comparator.json
 ```
 
-This repository has been verified with the comparator (Lean kernel only).
+This repository has been locally verified with the comparator.

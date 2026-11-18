@@ -270,7 +270,7 @@ private lemma mem_jKappa_iff (m : ℕ) (κ : Fin m →₀ ℕ) (p : Option (Fin 
     have hβκ : β ≤ κ := Finset.mem_Iic.mp hβ
     have hdeg : β.degree ≤ κ.degree := degree_mono hβκ
     refine ⟨fun k => ?_, ?_⟩
-    · simp [mapDomain_apply (Option.some_injective _), hβκ k]
+    · simp [mapDomain_apply_of_injective (Option.some_injective _), hβκ k]
     · rw [map_add, degree_single, degree_mapDomain]
       omega
   · rintro ⟨h1, h2⟩
@@ -283,7 +283,7 @@ private lemma mem_jKappa_iff (m : ℕ) (κ : Fin m →₀ ℕ) (p : Option (Fin 
     · rw [degree_eq_sum, Fintype.sum_option] at h2
       simp [mapDomain_of_notMem_range, hβdeg]
       omega
-    · simp [mapDomain_apply (Option.some_injective _), β]
+    · simp [mapDomain_apply_of_injective (Option.some_injective _), β]
 
 /-- One exchange step stays in `J_{m,κ}`. -/
 private lemma exchange_mem_jKappa (m : ℕ) (κ : Fin m →₀ ℕ) {p : Option (Fin m) →₀ ℕ}
@@ -300,7 +300,7 @@ private lemma exchange_mem_jKappa (m : ℕ) (κ : Fin m →₀ ℕ) {p : Option 
       simp [hij]
       omega
     · simp only [coe_add, coe_tsub, Pi.add_apply, Pi.sub_apply, single_apply]
-      rw [if_neg hjk]
+      rw [ite_eq_right hjk]
       omega
   · have := congrArg degree (tsub_add_cancel_of_le (single_le_iff.mpr hi))
     rw [map_add, degree_single] at this
@@ -368,7 +368,7 @@ private lemma choose_mul_factorial_mul_factorial {ι : Type*} [Finite ι] {κ γ
 private lemma factorial_single_none_add_mapDomain {m : ℕ} (n : ℕ) (β : Fin m →₀ ℕ) :
     (single none n + β.mapDomain Option.some).factorial = n.factorial * β.factorial := by
   simp [factorial_eq_prod β, factorial_eq_prod (single none n + _), Fintype.prod_option,
-    mapDomain_apply (Option.some_injective _), mapDomain_of_notMem_range]
+    mapDomain_apply_of_injective (Option.some_injective _), mapDomain_of_notMem_range]
 
 /-- The coefficient of `Ψ_κ` at `γ` is `κ!` times the normalized coefficient at the point
 `(N, κ - γ)`. -/
@@ -388,7 +388,8 @@ public theorem psiKappa_eq_factorial_smul_normalizedSupportPoly (R : Type*) [Com
     psiKappa R m κ = κ.factorial • normalizedSupportPoly R (Finsupp.jKappa m κ) := by
   unfold psiKappa normalizedSupportPoly Finsupp.jKappa
   rw [Finset.sum_image fun β _ β' _ h => Finsupp.ext fun i => by
-      simpa [mapDomain_apply (Option.some_injective _)] using DFunLike.congr_fun h (some i),
+      simpa [mapDomain_apply_of_injective (Option.some_injective _)] using
+        DFunLike.congr_fun h (some i),
     Finset.smul_sum]
   refine Finset.sum_nbij' (κ - ·) (κ - ·) (by simp) (by simp)
     (fun γ hγ => tsub_tsub_cancel_of_le (Finset.mem_Iic.1 hγ))
@@ -473,9 +474,9 @@ private lemma prod_fin_eq_prod_castLE_mul {m : ℕ} (hm : 1 ≤ m) (f : Fin m �
 private lemma sumElim_eq_add {σ τ : Type*} (α : σ →₀ ℕ) (γ : τ →₀ ℕ) :
     Finsupp.sumElim α γ = α.mapDomain Sum.inl + γ.mapDomain Sum.inr := by
   ext (j | i)
-  · simp [Finsupp.mapDomain_apply Sum.inl_injective,
+  · simp [Finsupp.mapDomain_apply_of_injective Sum.inl_injective,
       Finsupp.mapDomain_of_notMem_range _ _ (by simp : Sum.inl j ∉ Set.range (Sum.inr : τ → σ ⊕ τ))]
-  · simp [Finsupp.mapDomain_apply Sum.inr_injective,
+  · simp [Finsupp.mapDomain_apply_of_injective Sum.inr_injective,
       Finsupp.mapDomain_of_notMem_range _ _ (by simp : Sum.inr i ∉ Set.range (Sum.inl : σ → σ ⊕ τ))]
 
 /-- Evaluating `a x^α u^γ` at `(ξ, w)`. -/
@@ -548,7 +549,8 @@ private lemma degree_eq_add_sumFinsuppEquivProdFinsupp {τ : Type*} (β : σ ⊕
   have hβ : β = (Finsupp.sumFinsuppEquivProdFinsupp β).1.mapDomain Sum.inl +
       (Finsupp.sumFinsuppEquivProdFinsupp β).2.mapDomain Sum.inr := by
     ext (i | i) <;>
-      simp [Finsupp.mapDomain_apply Sum.inl_injective, Finsupp.mapDomain_apply Sum.inr_injective,
+      simp [Finsupp.mapDomain_apply_of_injective Sum.inl_injective,
+        Finsupp.mapDomain_apply_of_injective Sum.inr_injective,
         Finsupp.mapDomain_of_notMem_range]
   conv_lhs => rw [hβ]
   rw [map_add, Finsupp.degree_mapDomain, Finsupp.degree_mapDomain]
@@ -748,7 +750,7 @@ private lemma isLorentzian_X_add_X {τ : Type*} [Fintype τ] (a b : τ) :
   classical
   refine IsLorentzian.of_isHomogeneous_of_le_one (d := 1) (fun α => ?_)
     ((isHomogeneous_X ℝ a).add (isHomogeneous_X ℝ b)) le_rfl
-  rw [coeff_add, coeff_X, coeff_X]
+  rw [AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_X, coeff_X]
   split_ifs <;> norm_num
 
 /-- A variable is a Lorentzian polynomial. -/

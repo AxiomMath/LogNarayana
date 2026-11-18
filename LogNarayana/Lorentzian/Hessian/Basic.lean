@@ -155,8 +155,8 @@ private lemma iteratedPDeriv_monomial' (α δ : σ →₀ ℕ) (c : R) :
 
 /-- `[z^β] ∂^α h = ((β + α)! / β!) · [z^(β + α)] h`. -/
 private lemma coeff_iteratedPDeriv (α β : σ →₀ ℕ) (h : MvPolynomial σ R) :
-    coeff β (iteratedPDeriv α h) =
-      (((β + α).factorial / β.factorial : ℕ) : R) * coeff (β + α) h := by
+    (iteratedPDeriv α h).coeff β =
+      (((β + α).factorial / β.factorial : ℕ) : R) * h.coeff (β + α) := by
   classical
   induction h using MvPolynomial.induction_on' with
   | monomial δ c =>
@@ -164,9 +164,9 @@ private lemma coeff_iteratedPDeriv (α β : σ →₀ ℕ) (h : MvPolynomial σ 
     by_cases hd : δ = β + α
     · subst hd
       simp [mul_comm]
-    · rw [if_neg hd, mul_zero]
+    · rw [ite_eq_right hd, mul_zero]
       by_cases hle : α ≤ δ
-      · rw [if_neg]
+      · rw [ite_eq_right]
         rintro rfl
         exact hd (tsub_add_cancel_of_le hle).symm
       · simp [hle]
@@ -194,7 +194,7 @@ public theorem hessianAtZero_iteratedPDeriv_apply (h : MvPolynomial σ R) (α : 
     (p q : σ) :
     hessianAtZero (iteratedPDeriv α h) p q =
       ((α + Finsupp.single p 1 + Finsupp.single q 1).factorial : R) *
-        coeff (α + Finsupp.single p 1 + Finsupp.single q 1) h := by
+        h.coeff (α + Finsupp.single p 1 + Finsupp.single q 1) := by
   have hγ : α + single p 1 + single q 1 = (single p 1 + single q 1) + α := by abel
   have h0 : Finsupp.factorial (0 : σ →₀ ℕ) = 1 := by simp [Finsupp.factorial]
   rw [hγ, hessianAtZero, Matrix.of_apply, constantCoeff_eq, coeff_iteratedPDeriv,
@@ -204,7 +204,7 @@ public theorem hessianAtZero_iteratedPDeriv_apply (h : MvPolynomial σ R) (α : 
 /-- The Hessian entries of `g` are `H p q = (e_p + e_q)! · [z^(e_p + e_q)] g`. -/
 private lemma hessianAtZero_apply_eq (g : MvPolynomial σ R) (p q : σ) :
     hessianAtZero g p q =
-      ((single p 1 + single q 1 : σ →₀ ℕ).factorial : R) * coeff (single p 1 + single q 1) g := by
+      ((single p 1 + single q 1 : σ →₀ ℕ).factorial : R) * g.coeff (single p 1 + single q 1) := by
   simpa [iteratedPDeriv_zero_apply] using hessianAtZero_iteratedPDeriv_apply g 0 p q
 
 /-- The Hessian at the origin of the zero polynomial is the zero matrix. -/

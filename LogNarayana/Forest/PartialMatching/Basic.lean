@@ -208,7 +208,7 @@ private lemma aeval_basisGeneratingPolynomial_eq {α : Type u} [Fintype α] {M :
   simp only [e, Equiv.coe_fn_mk, hbase, Finset.toLeft_disjSum, Finset.card_disjSum,
     Finset.prod_disjSum, Sum.elim_inl, Sum.elim_inr, Finset.prod_const]
   by_cases hI : M.Indep (I : Set α)
-  · simp only [hI, true_and, if_true]
+  · simp only [hI, true_and, ite_true]
     rw [← Finset.sum_filter, ← Finset.mul_sum, sum_filter_add_card_eq (card_le_of_indep hN hI)]
     simp only [smul_eq_C_mul, div_eq_mul_inv, map_mul, map_pow, map_natCast,
       one_mul, ← inv_pow]
@@ -334,8 +334,8 @@ private lemma factorialNormalization_X_pow_mul {σ R : Type*} [CommSemiring R] [
   have hmt : m t = 0 := by
     by_contra h
     exact hf ((mem_vars_iff_mem_support t).2 ⟨m, hm, Finsupp.mem_support_iff.2 h⟩)
-  rw [X_pow_eq_monomial, monomial_mul, factorialNormalization_monomial, C_mul_monomial,
-    monomial_mul]
+  rw [X_pow_eq_monomial, monomial_mul_monomial, factorialNormalization_monomial, C_mul_monomial,
+    monomial_mul_monomial]
   simp [hmt, mul_comm]
 
 /-- A polynomial renamed along `some` does not involve `none`, so

@@ -273,7 +273,7 @@ private theorem getLast?_eq_getElem?_of_append_singleton_eq_drop_take {α : Type
   have hpos := List.length_pos_iff.2 hne
   have := congrArg (·[P.length - 1]?) h
   rw [List.getElem?_append_left (by omega), List.getElem?_drop, List.getElem?_take,
-    if_pos (by omega)] at this
+    ite_eq_left (by omega)] at this
   rw [List.getLast?_eq_getElem?, this]
   congr 1
   omega
@@ -347,7 +347,7 @@ private theorem drop_take_eq_of_nodup {α : Type*} {L P Q : List α} {a b : α} 
   have hb' := congrArg (·[P.length]?) h
   simp only [List.append_assoc, List.getElem?_append_right le_rfl, Nat.sub_self,
     List.cons_append, List.getElem?_cons_zero, List.getElem?_drop, List.getElem?_take] at hb'
-  rw [if_pos (by omega)] at hb'
+  rw [ite_eq_left (by omega)] at hb'
   obtain ⟨_, e1⟩ := List.getElem?_eq_some_iff.mp hb
   obtain ⟨_, e2⟩ := List.getElem?_eq_some_iff.mp hb'.symm
   have hi' := hnd.getElem_inj_iff.mp (e1.trans e2.symm)

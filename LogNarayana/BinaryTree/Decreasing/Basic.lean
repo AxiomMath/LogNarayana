@@ -111,7 +111,7 @@ private theorem ascentTops_append_cons [DecidableEq α] {m : α} {u : List α}
     | cons b u =>
       rw [List.cons_append, List.cons_append, ascentTops_cons_cons, ← List.cons_append,
         ih (fun x hx => hu x (List.mem_cons_of_mem _ hx)), ascentTops_cons_cons]
-      simp only [reduceCtorEq, if_false, Finset.union_assoc]
+      simp only [reduceCtorEq, ite_false, Finset.union_assoc]
 
 /-- The ascent tops of `m v` when `m` exceeds every letter of `v`. -/
 private theorem ascentTops_cons_of_lt [DecidableEq α] {m : α} {v : List α}
@@ -119,7 +119,7 @@ private theorem ascentTops_cons_of_lt [DecidableEq α] {m : α} {v : List α}
   cases v with
   | nil => rfl
   | cons b v =>
-    rw [ascentTops_cons_cons, if_neg (not_lt_of_gt (hv b (by simp))), Finset.empty_union]
+    rw [ascentTops_cons_cons, ite_eq_right (not_lt_of_gt (hv b (by simp))), Finset.empty_union]
 
 /-- Splitting a list at a letter `m` exceeding every letter before it creates no descent. -/
 private theorem descentTops_append_cons [DecidableEq α] {m : α} {u : List α}
@@ -144,7 +144,8 @@ private theorem descentTops_cons_of_lt [DecidableEq α] {m : α} {v : List α}
   cases v with
   | nil => rfl
   | cons b v =>
-    rw [descentTops_cons_cons, if_pos (hv b (by simp)), if_neg (by simp), Finset.union_comm]
+    rw [descentTops_cons_cons, ite_eq_left (hv b (by simp)), ite_eq_right (by simp),
+        Finset.union_comm]
 
 /-- A letter larger than every later letter is not a peak and does not create one. -/
 private theorem peakCount_cons_of_lt {m : α} {v : List α} (hv : ∀ a ∈ v, a < m) :
@@ -153,7 +154,7 @@ private theorem peakCount_cons_of_lt {m : α} {v : List α} (hv : ∀ a ∈ v, a
   | [] => rfl
   | [b] => rw [peakCount_of_length_le (by simp), peakCount_of_length_le (by simp)]
   | b :: c :: l =>
-    rw [peakCount_cons_cons_cons, if_neg, zero_add]
+    rw [peakCount_cons_cons_cons, ite_eq_right, zero_add]
     rintro ⟨h, -⟩
     exact lt_asymm h (hv b (by simp))
 
@@ -174,13 +175,13 @@ private theorem peakCount_append_cons {m : α} {u v : List α} (hu : ∀ a ∈ u
       | [], _ => rfl
       | c :: l, hv =>
         simp only [List.nil_append, List.cons_append]
-        rw [peakCount_cons_cons_cons, if_pos ⟨hu a (by simp), hv c (by simp)⟩,
+        rw [peakCount_cons_cons_cons, ite_eq_left ⟨hu a (by simp), hv c (by simp)⟩,
           peakCount_cons_of_lt hv]
         simp
         omega
     | [b], ih =>
       simp only [List.cons_append, List.nil_append] at ih ⊢
-      rw [peakCount_cons_cons_cons, if_neg (fun h => lt_asymm h.2 (hu b (by simp))), ih,
+      rw [peakCount_cons_cons_cons, ite_eq_right (fun h => lt_asymm h.2 (hu b (by simp))), ih,
         peakCount_of_length_le (l := [a, b]) (by simp),
         peakCount_of_length_le (l := [b]) (by simp)]
       simp
@@ -388,7 +389,7 @@ public theorem ascentTops_inorder_of_mem_decreasingTrees {A : Finset α} {T : Bi
     | nil => simp [inorder]
     | node a l' r' =>
       simp only [inorder, leftChildLabels, List.append_eq_nil_iff, reduceCtorEq, and_false,
-        if_false]
+        ite_false]
       exact Finset.union_right_comm _ _ _
 
 /-- For a decreasing binary plane tree `T` on `A`, the descent tops of the inorder reading of

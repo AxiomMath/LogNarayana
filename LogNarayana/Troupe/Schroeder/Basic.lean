@@ -333,7 +333,7 @@ public theorem schroederFiberPolynomial_21345_eval_one (R : Type*) [CommSemiring
 private lemma isLorentzian_X_zero_add_X_one :
     (X 0 + X 1 : MvPolynomial (Fin 2) ℝ).IsLorentzian :=
   IsLorentzian.of_isHomogeneous_of_le_one (d := 1)
-    (fun α ↦ by simp only [coeff_add, coeff_X]; positivity)
+    (fun α ↦ by simp only [AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_X]; positivity)
     ((isHomogeneous_X ℝ 0).add (isHomogeneous_X ℝ 1)) le_rfl
 
 /-- The substitution `(z, w) ↦ (z + w, z)` preserves Lorentzian polynomials, being the linear

@@ -262,7 +262,7 @@ public theorem homogenize_eq_X_none_pow_mul {σ : Type*} (f : MvPolynomial σ �
     Finset.filter_true_of_mem fun α hα => (hdeg α hα).trans hD,
     Finset.filter_true_of_mem hdeg]
   refine Finset.sum_congr rfl fun α hα => ?_
-  rw [X_pow_eq_monomial, monomial_mul, one_mul]
+  rw [X_pow_eq_monomial, monomial_mul_monomial, one_mul]
   congr 1
   rw [add_left_comm, ← Finsupp.single_add]
   congr 2

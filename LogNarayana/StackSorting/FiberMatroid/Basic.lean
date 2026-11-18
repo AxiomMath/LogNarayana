@@ -161,9 +161,9 @@ private lemma openChoiceSet_eq {n : ℕ} (hn : 1 ≤ n) {π : List ℕ} (hπ : �
   ext ⟨b, v⟩
   rw [mem_openChoiceSet_empty_iff, mem_openChoiceSet_empty_iff]
   cases b
-  · simp only [Bool.false_eq_true, if_false]
+  · simp only [Bool.false_eq_true, ite_false]
     rw [mem_minus_iff hn hπ hT hTπ, mem_minus_iff hn hπ hT' hT'π, hLC]
-  · simp only [if_true]
+  · simp only [ite_true]
     rw [mem_plus_iff hn hπ hT hTπ, mem_plus_iff hn hπ hT' hT'π, hRC]
 
 /-- The stack reconstruction recovers `(M(T), ∅, C(T))` from the choice set of a tree in the
@@ -698,13 +698,14 @@ private lemma tops_sdiff (P Q P' Q' : Finset ℕ) :
 
 private lemma tops_subset_iff {P Q P' Q' : Finset ℕ} :
     tops P Q ⊆ tops P' Q' ↔ P ⊆ P' ∧ Q ⊆ Q' := by
-  simp only [Finset.subset_iff, Prod.forall, Bool.forall_bool, mem_tops, cond_false, cond_true]
+  simp only [Finset.subset_iff, Prod.forall, Bool.forall_bool, mem_tops, Bool.cond_false,
+      Bool.cond_true]
   tauto
 
 private lemma disjoint_tops_iff {P Q P' Q' : Finset ℕ} :
     Disjoint (tops P Q) (tops P' Q') ↔ Disjoint P P' ∧ Disjoint Q Q' := by
-  simp only [Finset.disjoint_left, Prod.forall, Bool.forall_bool, mem_tops, cond_false,
-    cond_true]
+  simp only [Finset.disjoint_left, Prod.forall, Bool.forall_bool, mem_tops, Bool.cond_false,
+    Bool.cond_true]
   tauto
 
 private lemma disjoint_sdiff_iff {s t u : Finset ℕ} (h : Disjoint t u) :
@@ -738,9 +739,9 @@ private lemma aeval_prod_X {τ : Type*} [DecidableEq τ] (R B : Finset τ) :
   rw [map_prod]
   simp only [aeval_X]
   split_ifs with h
-  · exact Finset.prod_congr rfl fun x hx ↦ by rw [if_neg (Finset.disjoint_left.1 h hx)]
+  · exact Finset.prod_congr rfl fun x hx ↦ by rw [ite_eq_right (Finset.disjoint_left.1 h hx)]
   · obtain ⟨x, hxR, hxB⟩ := Finset.not_disjoint_iff.1 h
-    exact Finset.prod_eq_zero hxR (if_pos hxB)
+    exact Finset.prod_eq_zero hxR (ite_eq_left hxB)
 
 private lemma descentTops_subset (σ : List ℕ) : σ.descentTops ⊆ σ.toFinset := by
   intro a ha

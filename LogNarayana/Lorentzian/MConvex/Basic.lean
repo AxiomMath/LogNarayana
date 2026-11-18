@@ -118,12 +118,12 @@ public theorem iteratedPDeriv_add_single (h : MvPolynomial σ R) (α : σ →₀
   rw [coe_basisMonomials, LinearMap.comp_apply, iteratedPDeriv_monomial, iteratedPDeriv_monomial,
     Derivation.coeFn_coe, pderiv_monomial, ← tsub_tsub]
   by_cases hab : α ≤ β
-  · simp only [← le_tsub_iff_left hab, Finsupp.single_le_iff, if_pos hab]
+  · simp only [← le_tsub_iff_left hab, Finsupp.single_le_iff, ite_eq_left hab]
     by_cases hi : 1 ≤ (β - α) i
-    · rw [if_pos hi, Finsupp.factorial_div_tsub_single tsub_le_self hi]
+    · rw [ite_eq_left hi, Finsupp.factorial_div_tsub_single tsub_le_self hi]
       push_cast; rfl
     · simp [Nat.lt_one_iff.mp (not_le.mp hi)]
-  · rw [if_neg fun hb => hab (le_self_add.trans hb)]
+  · rw [ite_eq_right fun hb => hab (le_self_add.trans hb)]
     simp [hab]
 
 end MvPolynomial

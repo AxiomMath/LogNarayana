@@ -203,7 +203,7 @@ private lemma factorialNormalization_mul_left (t : σ) {A : MvPolynomial σ R} (
     refine Finset.sum_congr rfl fun v hv => ?_
     have hvt : v t = 0 := Finsupp.notMem_support_iff.1 fun h =>
       hA ((mem_vars_iff_mem_support t).2 ⟨v, hv, h⟩)
-    rw [factorialNormalization_monomial, monomial_mul, monomial_mul,
+    rw [factorialNormalization_monomial, monomial_mul_monomial, monomial_mul_monomial,
       factorialNormalization_monomial, Finsupp.add_apply, hvt, zero_add, mul_assoc]
 
 /-- `factorialNormalization t (t ^ k) = t ^ k / k!`. -/

@@ -262,18 +262,18 @@ private lemma numNodesOfType_insertion (τ : VertexType) :
   | node a l r, v, T₂, h₂ => by
     unfold insertion
     by_cases h₀ : v.val = 0
-    · rw [dif_pos h₀]
+    · rw [dite_eq_left h₀]
       have : vertexType (node a l r) T₂ = .binary := by cases T₂ <;> simp_all
       simp only [numNodesOfType, this]
-    rw [dif_neg h₀]
+    rw [dite_eq_right h₀]
     by_cases h : v.val - 1 < l.numNodes
-    · rw [dif_pos h]
+    · rw [dite_eq_left h]
       have ih := numNodesOfType_insertion τ l ⟨v.val - 1, h⟩ T₂ h₂
       have hl : l ≠ nil := by rintro rfl; simp at h
       rw [numNodesOfType, numNodesOfType, ih,
         vertexType_congr_left hl (insertion_ne_nil _ _ _)]
       omega
-    · rw [dif_neg h]
+    · rw [dite_eq_right h]
       have hv : v.val < l.numNodes + r.numNodes + 1 := v.isLt
       have ih := numNodesOfType_insertion τ r ⟨v.val - 1 - l.numNodes, by omega⟩ T₂ h₂
       have hr : r ≠ nil := by rintro rfl; simp at hv; omega
@@ -288,8 +288,8 @@ public theorem isInsertionAdditive_numRightEdges_add_one (M : Type*) [AddMonoidW
     IsInsertionAdditive (fun T : BinaryTree C =>
       ((T.numNodesOfType .rightUnary + T.numNodesOfType .binary + 1 : ℕ) : M)) := by
   intro T₁ v T₂ h₂
-  simp only [← Nat.cast_add, numNodesOfType_insertion _ T₁ v T₂ h₂, reduceCtorEq, if_false,
-    if_true]
+  simp only [← Nat.cast_add, numNodesOfType_insertion _ T₁ v T₂ h₂, reduceCtorEq, ite_false,
+    ite_true]
   congr 1
   omega
 

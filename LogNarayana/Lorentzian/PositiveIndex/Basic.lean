@@ -228,7 +228,7 @@ private lemma dotProduct_mulVec_sum_eigenvectorBasis {p : σ → Prop} [Decidabl
       ∑ i : {k // p k}, hA.eigenvalues i * c i ^ 2 := by
   simp only [mulVec_sum, mulVec_smul, hA.mulVec_eigenvectorBasis, sum_dotProduct,
     dotProduct_sum, smul_dotProduct, dotProduct_smul, eigenvectorBasis_dotProduct, smul_eq_mul,
-    mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_univ, if_true]
+    mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
   exact Finset.sum_congr rfl fun i _ => by ring
 
 private lemma finrank_eigenSpan (p : σ → Prop) [DecidablePred p] :

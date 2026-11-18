@@ -147,7 +147,7 @@ reindex the sum over `j ∈ [1, m + 1]` by `j = i + 1` and pull out one factor o
 @[lognarayana "lem_narayana_shift"]
 public theorem narayanaPolynomial_succ_eq_X_mul (m : ℕ) :
     narayanaPolynomial (m + 1) = X * shiftedNarayanaPolynomial m := by
-  rw [narayanaPolynomial, if_neg m.succ_ne_zero, ← Finset.Ico_add_one_right_eq_Icc,
+  rw [narayanaPolynomial, ite_eq_right m.succ_ne_zero, ← Finset.Ico_add_one_right_eq_Icc,
     Finset.sum_Ico_eq_sum_range, Nat.add_sub_cancel, shiftedNarayanaPolynomial, Finset.mul_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [add_comm 1 i, Nat.add_sub_cancel, pow_succ]
@@ -188,7 +188,7 @@ public theorem isMonicOfDegree_shiftedNarayanaPolynomial (m : ℕ) :
   refine ⟨natDegree_sum_le_of_forall_le _ _ fun j hj =>
     (natDegree_C_mul_X_pow_le _ _).trans (Finset.mem_range_succ_iff.mp hj), ?_⟩
   simp only [finsetSum_coeff, coeff_C_mul_X_pow, Finset.sum_ite_eq, Finset.self_mem_range_succ,
-    if_true, Nat.choose_self, Nat.choose_succ_self_right, Nat.cast_one]
+    ite_true, Nat.choose_self, Nat.choose_succ_self_right, Nat.cast_one]
   field_simp
 
 /-! ### The polynomials `Q_m` -/
@@ -249,7 +249,7 @@ private theorem catalan_choose_term_eq (m k j : ℕ) :
         (if j ≤ k then ((m - 2 * j).choose (k - j) : ℝ) else 0)) =
       ((m + 1).choose k : ℝ) * (k.choose j : ℝ) * ((m + 1 - k).choose (j + 1) : ℝ) := by
   by_cases hjk : j ≤ k
-  · rw [if_pos hjk]
+  · rw [ite_eq_left hjk]
     by_cases hm : k + j ≤ m
     · obtain ⟨s, rfl⟩ := Nat.exists_eq_add_of_le hjk
       obtain ⟨r, rfl⟩ : ∃ r, m = j + s + j + r := ⟨m - (j + s + j), by omega⟩
@@ -264,7 +264,7 @@ private theorem catalan_choose_term_eq (m k j : ℕ) :
         · rw [Nat.choose_eq_zero_of_lt (by omega : m < 2 * j)]; simp
       rw [h1]
       linear_combination ((m + 1 : ℕ) : ℝ) * (catalan j : ℝ) * h2
-  · rw [if_neg hjk, Nat.choose_eq_zero_of_lt (by omega : k < j)]
+  · rw [ite_eq_right hjk, Nat.choose_eq_zero_of_lt (by omega : k < j)]
     simp
 
 /-- A Vandermonde identity: `∑_{j < N} (k choose j) (n choose j + 1) = (k + n choose k + 1)`,

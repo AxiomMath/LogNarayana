@@ -287,7 +287,7 @@ private theorem exists_adoptableForest_eq_some {π : List α} {u b : ℕ}
     ∃ w, π.adoptableForest u = some w ∧ w ≤ b := by
   have hmem : b ∈ (Finset.Icc (u + 1) (π.length - 1)).filter (u ∈ π.adoptableInterval ·) :=
     Finset.mem_filter.2 ⟨Finset.mem_Icc.2 ⟨hub, hb⟩, hu⟩
-  exact ⟨_, by rw [adoptableForest, dif_pos ⟨b, hmem⟩], Finset.min'_le _ _ hmem⟩
+  exact ⟨_, by rw [adoptableForest, dite_eq_left ⟨b, hmem⟩], Finset.min'_le _ _ hmem⟩
 
 /-- The adoptable forest is a parent map on `[π.length - 1]`: a parent `p` of `a` satisfies
 `a + 1 ≤ p ≤ π.length - 1` and `a ∈ I_p`, so `a ≥ ℓ_p ≥ 1`. -/
@@ -491,13 +491,13 @@ public theorem List.isAdoptablePair_of_mem_fiberMatchings {n : ℕ} {π : List �
     intro j hj1 hj2 h
     have : w[j]? = B[j - a]? := by
       rw [heq, List.getElem?_append_right (by omega), List.getElem?_cons,
-        if_neg (by omega), List.getElem?_append_left (by omega)]
+        ite_eq_right (by omega), List.getElem?_append_left (by omega)]
       congr 1; omega
     rw [List.getElem?_eq_getElem h] at this
     exact List.mem_of_getElem? this.symm
   have hBpos : 0 < B.length := by simp [B]
   have hd : w[b - 1]? = some d := by
-    rw [heq, List.getElem?_append_right (by omega), List.getElem?_cons, if_neg (by omega),
+    rw [heq, List.getElem?_append_right (by omega), List.getElem?_cons, ite_eq_right (by omega),
       List.getElem?_append_left (by omega)]
     simp [B, show b - 1 - A.length - 1 = R₁.postorder.length + R₂.postorder.length by
       simp only [B, List.length_append, List.length_singleton] at hB; omega]

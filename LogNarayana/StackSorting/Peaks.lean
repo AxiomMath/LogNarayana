@@ -105,21 +105,22 @@ private lemma hasNonnegCoeffs_C_mul_X_mul_X {τ : Type*} {c : ℝ} (hc : 0 ≤ c
     (C c * X i * X j : MvPolynomial τ ℝ).HasNonnegCoeffs := by
   classical
   intro α
-  rw [mul_assoc, X, X, monomial_mul, C_mul_monomial, coeff_monomial]
+  rw [mul_assoc, X, X, monomial_mul_monomial, C_mul_monomial, coeff_monomial]
   split_ifs <;> simp [hc]
 
 /-- A Lorentzian polynomial has nonnegative coefficients (the zero polynomial included). -/
 private lemma IsLorentzian.coeff_nonneg {τ S : Type*} [Fintype τ] [CommRing S] [PartialOrder S]
     {f : MvPolynomial τ S} (h : f.IsLorentzian) (α : τ →₀ ℕ) : 0 ≤ f.coeff α := by
   rcases h with rfl | ⟨-, -, hnn, -⟩
-  exacts [(coeff_zero α).ge, hnn α]
+  exacts [by simp, hnn α]
 
 /-- The coefficient of `x y` in the peak kernel is `λ`. -/
 private lemma coeff_peak (c : ℝ) :
     (C c * X (some 0) * X (some 1) + (X (some 0) + X (some 1)) * X none +
         C (1 / 2) * X none ^ 2 : MvPolynomial (Option (Fin 2)) ℝ).coeff
       (Finsupp.single (some 0) 1 + Finsupp.single (some 1) 1) = c := by
-  simp only [mul_assoc, add_mul, pow_two, X, monomial_mul, C_mul_monomial, coeff_add,
+  simp only [mul_assoc, add_mul, pow_two, X, monomial_mul_monomial, C_mul_monomial,
+    AddMonoidAlgebra.coeff_add, Finsupp.add_apply,
     coeff_monomial]
   simp [Finsupp.ext_iff, Option.forall]
 

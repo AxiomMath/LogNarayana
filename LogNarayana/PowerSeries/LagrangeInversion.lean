@@ -87,9 +87,7 @@ private theorem lagrangeSeries_X_mul (χ : R[X]) :
   · simp [lagrangeSeries]
   · rw [PowerSeries.coeff_succ_X_mul]
     simp only [lagrangeSeries, PowerSeries.coeff_mk]
-    rw [mul_assoc, coeff_X_mul, pow_succ]
-    congr 1
-    ring
+    rw [mul_assoc, coeff_X_mul, pow_succ, show χ * (φ ^ m * φ) = φ * χ * φ ^ m by ring]
 
 /-- If `G = z φ(G)`, then `∑ₙ [u^n](ψ φ^n) zⁿ = (∑ₙ [u^n] φ^n zⁿ) · ψ(G)` for every `ψ`. -/
 private theorem lagrangeSeries_eq (G : PowerSeries R) (hG : G = PowerSeries.X * aeval G φ)
@@ -137,7 +135,7 @@ private theorem lagrangeSeries_one_mul (G : PowerSeries R) (hG : G = PowerSeries
 theorem _root_.PowerSeries.lagrangeInversion (R : Type*) [CommRing R] :
     PowerSeries.LagrangeInversion R := by
   intro φ G _ hG k n hk hkn
-  set D := PowerSeries.derivative R
+  set D := PowerSeries.derivative (R := R)
   set U := 1 - PowerSeries.X * aeval G (derivative φ)
   have hU : lagrangeSeries φ 1 * U = 1 := lagrangeSeries_one_mul φ G hG
   have hDG : PowerSeries.X * D G * U = G := by
@@ -160,7 +158,7 @@ theorem _root_.PowerSeries.lagrangeInversion (R : Type*) [CommRing R] :
   have hc := congrArg (PowerSeries.coeff n) hkey
   rw [PowerSeries.coeff_C_mul] at hc
   simp only [lagrangeSeries, PowerSeries.coeff_mk] at hc
-  rw [coeff_X_pow_mul', if_pos hkn] at hc
+  rw [coeff_X_pow_mul', ite_eq_left hkn] at hc
   rw [← hc]
   rcases n with _ | m
   · omega

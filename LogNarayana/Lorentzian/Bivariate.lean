@@ -64,7 +64,7 @@ private lemma factorial_single_add_single (a b : ℕ) :
 
 /-- The `(a, b)` coefficient of `homogenize f d` is `[x^a] f` when `a + b = d`. -/
 private lemma coeff_homogenize_single (f : ℝ[X]) {a b d : ℕ} (h : a + b = d) :
-    MvPolynomial.coeff (single (0 : Fin 2) a + single 1 b) (f.homogenize d) = f.coeff a := by
+    (f.homogenize d).coeff (single (0 : Fin 2) a + single 1 b) = f.coeff a := by
   rw [coeff_homogenize]
   simp [h]
 
@@ -104,7 +104,9 @@ public theorem hessianAtZero_iteratedPDeriv_homogenize (f : ℝ[X]) {d j : ℕ} 
   ext p q
   fin_cases p <;> fin_cases q <;>
     exact hessianAtZero_iteratedPDeriv_homogenize_apply f _ _
-      (by simp <;> omega) (by simp <;> omega) (by omega)
+      (by simp only [Fin.zero_eta, Fin.mk_one, Fin.isValue, Fin.reduceEq, ↓reduceIte]; omega)
+      (by simp only [Fin.zero_eta, Fin.mk_one, Fin.isValue, Fin.reduceEq, ↓reduceIte]; omega)
+      (by omega)
 
 end Polynomial
 

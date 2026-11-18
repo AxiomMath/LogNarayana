@@ -425,7 +425,7 @@ private lemma iteratedPDeriv_zero' {σ R : Type*} [CommSemiring R] (g : MvPolyno
 on the diagonal. -/
 private lemma hessianAtZero_apply_eq_coeff {σ R : Type*} [CommSemiring R]
     (g : MvPolynomial σ R) (i j : σ) :
-    hessianAtZero g i j = coeff (single j 1 + single i 1) g * ((single j 1 i : ℕ) + 1 : R) := by
+    hessianAtZero g i j = g.coeff (single j 1 + single i 1) * ((single j 1 i : ℕ) + 1 : R) := by
   rw [hessianAtZero, Matrix.of_apply, ← zero_add (single i 1), iteratedPDeriv_add_single,
     iteratedPDeriv_add_single, iteratedPDeriv_zero', constantCoeff_eq,
     coeff_pderiv, coeff_pderiv, zero_add]
@@ -439,19 +439,19 @@ private lemma sum_single_apply {σ : Type*} [DecidableEq σ] (t : Finset σ) (k 
 /-- The coefficient of `z_i z_j` in `e₂` is `0` on the diagonal and `1` off it. -/
 private lemma coeff_esymm_two {σ R : Type*} [Fintype σ] [DecidableEq σ] [CommSemiring R]
     (i j : σ) :
-    coeff (single j 1 + single i 1) (esymm σ R 2) = if i = j then 0 else 1 := by
+    (esymm σ R 2).coeff (single j 1 + single i 1) = if i = j then 0 else 1 := by
   rw [esymm_eq_sum_monomial, coeff_sum]
   simp only [coeff_monomial]
   split_ifs with hij
   · subst hij
-    refine Finset.sum_eq_zero fun t _ => if_neg fun h => ?_
+    refine Finset.sum_eq_zero fun t _ => ite_eq_right fun h => ?_
     have := congrArg (· i) h
     simp only [sum_single_apply, Finsupp.coe_add, Pi.add_apply, single_eq_same] at this
     split_ifs at this
     omega
-  · rw [Finset.sum_eq_single {i, j}, if_pos (by rw [Finset.sum_pair hij, add_comm])]
+  · rw [Finset.sum_eq_single {i, j}, ite_eq_left (by rw [Finset.sum_pair hij, add_comm])]
     · intro t _ ht
-      refine if_neg fun h => ht ?_
+      refine ite_eq_right fun h => ht ?_
       ext k
       have := congrArg (· k) h
       simp only [sum_single_apply, Finsupp.coe_add, Pi.add_apply, single_apply] at this
@@ -838,7 +838,7 @@ private lemma hasNonnegCoeffs_C_mul_X_zero_mul_X_one {lam : ℝ} (hlam : 0 ≤ l
     (MvPolynomial.C lam * MvPolynomial.X 0 * MvPolynomial.X 1 :
       MvPolynomial (Fin 2) ℝ).HasNonnegCoeffs := by
   intro α
-  simp only [MvPolynomial.X, MvPolynomial.C_mul_monomial, MvPolynomial.monomial_mul,
+  simp only [MvPolynomial.X, MvPolynomial.C_mul_monomial, MvPolynomial.monomial_mul_monomial,
     MvPolynomial.coeff_monomial]
   split_ifs <;> simp [hlam]
 

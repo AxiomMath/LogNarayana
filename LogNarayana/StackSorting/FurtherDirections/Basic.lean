@@ -113,7 +113,7 @@ public theorem _root_.Polynomial.coeff_sum_gammaBasis_symm (n : ℕ) (γ : ℕ �
   refine Finset.sum_congr rfl fun i hi => ?_
   have hi : 2 * i ≤ n := by have := Finset.mem_range.1 hi; omega
   congr 1
-  by_cases h1 : i ≤ k <;> by_cases h2 : i ≤ n - k <;> simp only [h1, h2, if_true, if_false]
+  by_cases h1 : i ≤ k <;> by_cases h2 : i ≤ n - k <;> simp only [h1, h2, ite_true, ite_false]
   · exact_mod_cast Nat.choose_symm_of_eq_add (by omega)
   · exact_mod_cast Nat.choose_eq_zero_of_lt (by omega)
   · exact_mod_cast (Nat.choose_eq_zero_of_lt (by omega)).symm
@@ -297,7 +297,7 @@ private lemma aeval_fiberTopPolynomial (π : List ℕ) :
       (fiberTopPolynomial ℝ π) =
       Polynomial.toMvPolynomial () (fiberDescentPolynomial ℝ π) := by
   simp only [fiberTopPolynomial, fiberDescentPolynomial, map_sum, map_mul, map_prod, aeval_X,
-    map_pow, Polynomial.toMvPolynomial_X, if_true, Bool.false_eq_true, if_false,
+    map_pow, Polynomial.toMvPolynomial_X, ite_true, Bool.false_eq_true, ite_false,
     Finset.prod_const_one, mul_one, Finset.prod_const]
   refine Finset.sum_congr rfl fun σ hσ => ?_
   rw [card_descentTops (nodup_of_mem_stackFiber hσ)]
@@ -583,7 +583,7 @@ private lemma exists_eq_of_sum_mul_ite_int {ι : Type*} {t : Finset ι} {w : ι 
     eq_of_subset_of_card_le (fun j hj => ?_) (by rw [hS i hi, hcard])⟩
   by_contra hjT
   have := eq_of_sum_mul_eq hw0 hw1 (fun i hi => (h12 j i hi).1)
-    (by rw [← ha j, haT j, if_neg hjT]) hi hwi
+    (by rw [← ha j, haT j, ite_eq_right hjT]) hi hwi
   norm_num [hj] at this
 
 /-- The lattice points of `P^nlc` are exactly its ten vertices `v_S`, `S ⊆ [5]`, `|S| = 2`. -/

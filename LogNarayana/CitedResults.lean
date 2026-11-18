@@ -59,7 +59,7 @@ private lemma isLorentzian_quadratic_fin_two {a b c : ℝ} (ha : 0 ≤ a) (hb : 
     monomial (Finsupp.single 0 1 + Finsupp.single 1 1) b + monomial (Finsupp.single 1 2) c
   have hnn : g.HasNonnegCoeffs := by
     intro α
-    simp only [g, coeff_add, coeff_monomial]
+    simp only [g, AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_monomial]
     split_ifs <;> positivity
   rw [isLorentzian_iff_hasAtMostOnePosEigenvalue_of_isHomogeneous_two
     (isHomogeneous_quadratic_fin_two a b c) hnn]
@@ -69,7 +69,8 @@ private lemma isLorentzian_quadratic_fin_two {a b c : ℝ} (ha : 0 ≤ a) (hb : 
     simp only [iteratedPDeriv_zero_apply, zero_add] at this
     rw [this, Finsupp.factorial, Finsupp.prod_fintype _ _ (fun _ => by simp)]
     fin_cases p <;> fin_cases q <;>
-      simp [g, coeff_add, coeff_monomial, Finsupp.ext_iff, Fin.forall_fin_two, Fin.prod_univ_two]
+      simp [g, AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_monomial, Finsupp.ext_iff,
+          Fin.forall_fin_two, Fin.prod_univ_two]
   rw [hH, Matrix.hasAtMostOnePosEigenvalue_fin_two_iff (by positivity)]
   nlinarith
 
@@ -79,7 +80,7 @@ private lemma quadratic_fin_two_eq (a b c : ℝ) :
       monomial (Finsupp.single 0 2) a + monomial (Finsupp.single 0 1 + Finsupp.single 1 1) b +
         monomial (Finsupp.single 1 2) c := by
   simp only [X_pow_eq_monomial]
-  simp only [X, monomial_mul, C_mul_monomial, mul_one]
+  simp only [X, monomial_mul_monomial, C_mul_monomial, mul_one]
 
 /-- `isLorentzian_quadratic_fin_two` in terms of the variables. -/
 private lemma isLorentzian_quadratic_fin_two' {a b c : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b)
@@ -137,7 +138,7 @@ public theorem isLorentzianClosed_fin_two_example :
     zero_le_one le_rfl (by simp), isHomogeneous_quadratic_fin_two _ _ _⟩,
     isHomogeneous_quadratic_fin_two _ _ _, fun α => ?_,
     isLorentzian_quadratic_fin_two le_rfl zero_le_one le_rfl (by norm_num)⟩
-  simp only [coeff_add, coeff_monomial]
+  simp only [AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_monomial]
   refine (Tendsto.add ?_ tendsto_const_nhds).add tendsto_const_nhds
   split_ifs
   · exact tendsto_one_div_add_atTop_nhds_zero_nat
@@ -185,7 +186,7 @@ public theorem lorentzianMul_fin_two_example :
     IsLorentzian.of_isHomogeneous_of_le_one (fun α => ?_)
       ((isHomogeneous_X ℝ 0).add (isHomogeneous_X ℝ 1)) le_rfl, ?_⟩
   · rw [coeff_X]; split_ifs <;> norm_num
-  · rw [coeff_add, coeff_X, coeff_X]; split_ifs <;> norm_num
+  · rw [AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_X, coeff_X]; split_ifs <;> norm_num
   · convert isLorentzian_quadratic_fin_two' (a := 1) (b := 1) (c := 0) zero_le_one zero_le_one
       le_rfl (by norm_num) using 1
     simp only [map_one, map_zero]
@@ -252,7 +253,7 @@ public theorem fullFactorialNormalizationMulLorentzian_fin_two_example :
   · rw [map_add, X, X, fullFactorialNormalization_monomial, fullFactorialNormalization_monomial]
     refine IsLorentzian.of_isHomogeneous_of_le_one (fun α => ?_)
       ((isHomogeneous_monomial _ (by simp)).add (isHomogeneous_monomial _ (by simp))) le_rfl
-    simp only [coeff_add, coeff_monomial]
+    simp only [AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_monomial]
     split_ifs <;> simp [Finsupp.factorial, Finsupp.prod_single_index]
   · have h : ((X 0 + X 1) * (X 0 + X 1) : MvPolynomial (Fin 2) ℝ) =
         C 1 * X 0 ^ 2 + C 2 * (X 0 * X 1) + C 1 * X 1 ^ 2 := by
@@ -301,8 +302,8 @@ public theorem normalizedSchurIsLorentzian_fin_two_example :
     (fullFactorialNormalization (Fin 2) ℝ
       ((PartitionAtMostParts.hook 2 1 0).schurPolynomial ℝ)).IsLorentzian := by
   rw [PartitionAtMostParts.schurPolynomial_hook ℝ (by norm_num) 1 0, hsymm_zero, pow_one,
-    mul_one, Fin.prod_univ_two, X, X, monomial_mul, one_mul, fullFactorialNormalization_monomial,
-    factorial_single_add_single]
+    mul_one, Fin.prod_univ_two, X, X, monomial_mul_monomial, one_mul,
+    fullFactorialNormalization_monomial, factorial_single_add_single]
   convert isLorentzian_quadratic_fin_two (a := 0) (b := 1) (c := 0) le_rfl zero_le_one le_rfl
     (by norm_num) using 1
   simp
@@ -461,14 +462,14 @@ public theorem limit_X_add_inv_succ :
   have hlim : ∀ α, Tendsto (fun k => (F k).coeff α) atTop
       (nhds ((X 0 : MvPolynomial (Fin 1) ℝ).coeff α)) := by
     intro α
-    simp only [F, coeff_add, coeff_C]
+    simp only [F, AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_C]
     by_cases hα : α = 0
     · subst hα
-      simp only [if_true]
+      simp only [ite_true]
       have : Tendsto (fun k : ℕ => (1 : ℝ) / ((k : ℝ) + 1)) atTop (nhds 0) :=
         tendsto_one_div_add_atTop_nhds_zero_nat
       simpa using (tendsto_const_nhds (x := (X 0 : MvPolynomial (Fin 1) ℝ).coeff 0)).add this
-    · simp only [Ne.symm hα, if_false, add_zero]
+    · simp only [Ne.symm hα, ite_false, add_zero]
       exact tendsto_const_nhds
   refine ⟨fun k => isRealStable_X_add_C 0 _, fun k => ?_, hlim, fun f hf => Or.inr ?_⟩
   · refine (totalDegree_add _ _).trans (max_le ?_ ?_)
@@ -499,7 +500,7 @@ public theorem isLorentzian_X_mul_X :
   have hhom : f.IsHomogeneous 2 := (isHomogeneous_X ℝ 0).mul (isHomogeneous_X ℝ 1)
   have hnn : f.HasNonnegCoeffs := by
     intro α
-    simp only [f, X, monomial_mul, one_mul, coeff_monomial]
+    simp only [f, X, monomial_mul_monomial, one_mul, coeff_monomial]
     split_ifs <;> norm_num
   refine ⟨hhom, (isRealStable_X 0).mul (isRealStable_X 1), hnn, ?_⟩
   rw [isLorentzian_iff_hasAtMostOnePosEigenvalue_of_isHomogeneous_two hhom hnn]
@@ -517,7 +518,7 @@ support. -/
 private lemma homogenize_eq_sum_of_support_subset {σ : Type*} (f : MvPolynomial σ ℝ) (D : ℕ)
     {s : Finset (σ →₀ ℕ)} (hs : f.support ⊆ s) :
     f.homogenize D = ∑ α ∈ s with α.degree ≤ D,
-      monomial (α.mapDomain Option.some + Finsupp.single none (D - α.degree)) (coeff α f) := by
+      monomial (α.mapDomain Option.some + Finsupp.single none (D - α.degree)) (f.coeff α) := by
   rw [homogenize]
   refine Finset.sum_subset (Finset.filter_subset_filter _ hs) fun α hα hα' => ?_
   have : α ∉ f.support := fun h => hα' (Finset.mem_filter.2 ⟨h, (Finset.mem_filter.1 hα).2⟩)
@@ -536,21 +537,21 @@ public theorem homogenize_X_add_one :
   have hcoeff : ∀ α, f.coeff α = (if Finsupp.single 0 1 = α then 1 else 0) +
       (if (0 : Fin 1 →₀ ℕ) = α then 1 else 0) := by
     intro α
-    simp only [f, coeff_add, coeff_X, coeff_C]
+    simp only [f, AddMonoidAlgebra.coeff_add, Finsupp.add_apply, coeff_X, coeff_C]
   refine ⟨isRealStable_X_add_C 0 1, fun α => ?_, fun D hD => ?_⟩
   · rw [hcoeff]; split_ifs <;> norm_num
   have hne : (Finsupp.single (0 : Fin 1) 1) ≠ 0 := by simp
   have hc1 : f.coeff (Finsupp.single 0 1) = 1 := by
-    rw [hcoeff, if_pos rfl, if_neg hne.symm, add_zero]
+    rw [hcoeff, ite_eq_left rfl, ite_eq_right hne.symm, add_zero]
   have hc0 : f.coeff 0 = 1 := by
-    rw [hcoeff, if_neg hne, if_pos rfl, zero_add]
+    rw [hcoeff, ite_eq_right hne, ite_eq_left rfl, zero_add]
   have hsupp : f.support ⊆ {Finsupp.single 0 1, 0} := by
     intro α hα
     rw [mem_support_iff, hcoeff] at hα
     simp only [Finset.mem_insert, Finset.mem_singleton]
     by_contra h
     push Not at h
-    exact hα (by rw [if_neg (Ne.symm h.1), if_neg (Ne.symm h.2), add_zero])
+    exact hα (by rw [ite_eq_right (Ne.symm h.1), ite_eq_right (Ne.symm h.2), add_zero])
   have hD1 : 1 ≤ D := by
     refine le_trans ?_ hD
     have hmem : Finsupp.single (0 : Fin 1) 1 ∈ f.support := by
@@ -564,7 +565,7 @@ public theorem homogenize_X_add_one :
     obtain ⟨E, rfl⟩ := Nat.exists_eq_add_of_le' hD1
     simp only [Finsupp.mapDomain_single, Finsupp.mapDomain_zero, Finsupp.degree_single,
       map_zero, zero_add, Nat.add_sub_cancel, Nat.sub_zero]
-    rw [X_pow_eq_monomial, X, X, mul_add, monomial_mul, monomial_mul, one_mul,
+    rw [X_pow_eq_monomial, X, X, mul_add, monomial_mul_monomial, monomial_mul_monomial, one_mul,
       ← Finsupp.single_add]
     simp [add_comm]
   rw [h]

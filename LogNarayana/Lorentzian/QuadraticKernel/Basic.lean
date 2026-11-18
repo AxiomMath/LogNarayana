@@ -98,7 +98,7 @@ private lemma eq_single_none_add (s : Option σ →₀ ℕ) :
   ext i
   cases i with
   | none => simp [mapDomain_some_none]
-  | some i => simp [Finsupp.mapDomain_apply (Option.some_injective _)]
+  | some i => simp [Finsupp.mapDomain_apply_of_injective (Option.some_injective _)]
 
 omit [Algebra ℚ R] in
 private lemma monomial_congr {s s' : Option σ →₀ ℕ} {a a' : R} (h : s = s') (h' : a = a') :
@@ -160,7 +160,7 @@ omit [Algebra ℚ R] in
 private lemma rename_some_monomial_mul_X (β : σ →₀ ℕ) (b : R) :
     rename some (monomial β b) * X none =
       monomial (β.mapDomain some + Finsupp.single none 1) b := by
-  rw [rename_monomial, X, monomial_mul, mul_one]
+  rw [rename_monomial, X, monomial_mul_monomial, mul_one]
 
 /-- `∂_t² (U * (A t)) = A U`. -/
 private lemma pderiv_pderiv_tConv_mul_X (A : MvPolynomial σ R) (U : MvPolynomial (Option σ) R) :
@@ -170,7 +170,7 @@ private lemma pderiv_pderiv_tConv_mul_X (A : MvPolynomial σ R) (U : MvPolynomia
     induction A using MvPolynomial.induction_on' with
     | monomial β b =>
       rw [rename_some_monomial_mul_X, tConv_monomial, pderiv_monomial, pderiv_monomial,
-        rename_monomial, monomial_mul]
+        rename_monomial, monomial_mul_monomial]
       refine monomial_congr ?_ ?_
       · ext i; cases i <;> simp [mapDomain_some_none]
         omega
@@ -192,7 +192,7 @@ private lemma pderiv_pderiv_tConv_rename (B : MvPolynomial σ R) (U : MvPolynomi
     induction B using MvPolynomial.induction_on' with
     | monomial β b =>
       rw [rename_monomial, tConv_monomial, pderiv_monomial, pderiv_monomial, pderiv_monomial,
-        monomial_mul]
+        monomial_mul_monomial]
       rcases Nat.eq_zero_or_pos (s none) with h | h
       · simp [h, mapDomain_some_none]
       refine monomial_congr ?_ ?_
@@ -320,7 +320,7 @@ variable {τ S : Type*} [CommSemiring S] [PartialOrder S] [IsOrderedRing S]
 
 private lemma HasNonnegCoeffs.add {f g : MvPolynomial τ S} (hf : f.HasNonnegCoeffs)
     (hg : g.HasNonnegCoeffs) : (f + g).HasNonnegCoeffs := fun α => by
-  rw [coeff_add]; exact add_nonneg (hf α) (hg α)
+  rw [AddMonoidAlgebra.coeff_add, Finsupp.add_apply]; exact add_nonneg (hf α) (hg α)
 
 private lemma HasNonnegCoeffs.mul {f g : MvPolynomial τ S} (hf : f.HasNonnegCoeffs)
     (hg : g.HasNonnegCoeffs) : (f * g).HasNonnegCoeffs := fun α => by
@@ -431,7 +431,7 @@ variable {α β : Type*}
 /-- Renaming along an equivalence reads coefficients through the inverse equivalence. -/
 private lemma coeff_rename_equiv {R : Type*} [CommSemiring R] (e : α ≃ β)
     (f : MvPolynomial α R) (γ : β →₀ ℕ) :
-    coeff γ (rename e f) = coeff (Finsupp.equivMapDomain e.symm γ) f := by
+    (rename e f).coeff γ = f.coeff (Finsupp.equivMapDomain e.symm γ) := by
   have h : γ = Finsupp.mapDomain e (Finsupp.equivMapDomain e.symm γ) := by
     ext b; simp [Finsupp.equivMapDomain_eq_mapDomain, ← Finsupp.mapDomain_comp]
   conv_lhs => rw [h]

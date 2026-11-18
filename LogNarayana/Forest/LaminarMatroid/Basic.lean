@@ -818,8 +818,9 @@ public theorem openChoiceSet_stackReconstruction {N : ℕ} {par : ℕ → Option
       (simp_all; try tauto)
   · have h1 : (true, v) ∉ I := fun h => hv (hground h)
     have h2 : (false, v) ∉ I := fun h => hv (hground h)
-    cases b <;> simp [openChoiceSet, stackReconstruction, mem_unmatchedVertices_iff,
-      mem_right_iff hpar hI, hv, h1, h2]
+    have hv' : 1 ≤ v → ¬v ≤ N := fun h₁ h₂ => hv (mem_Icc.2 ⟨h₁, h₂⟩)
+    cases b <;> simp +contextual [openChoiceSet, stackReconstruction, mem_unmatchedVertices_iff,
+      mem_right_iff hpar hI, hv, hv', h1, h2]
 
 /-- The invariant of a stack `S` and a set of pairs `M` after `w` steps used for the open-pair
 property: the stack is strictly increasing in `[1, w]`, the pairs form a noncrossing partial

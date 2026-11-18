@@ -162,7 +162,7 @@ private lemma exponent_eq {σ : Type*} (α β : σ →₀ ℕ) (a b : ℕ) :
     simp only [Finsupp.mapDomain_add, Finsupp.mapDomain_single, ← Finsupp.mapDomain_comp,
       Function.comp_def, Option.elim_none, Option.elim_some, Finsupp.add_apply,
       Finsupp.sumFinsuppEquivProdFinsupp_symm_inl, Finsupp.sumFinsuppEquivProdFinsupp_symm_inr]
-  · simp [Finsupp.mapDomain_apply Sum.inl_injective]
+  · simp [Finsupp.mapDomain_apply_of_injective Sum.inl_injective]
   · rw [Finsupp.mapDomain_of_notMem_range _ _ (by simp),
       Finsupp.mapDomain_of_notMem_range _ _ (by simp)]
     fin_cases i <;> simp
@@ -197,7 +197,7 @@ public theorem tConvolution_monomial_monomial {σ R : Type*} [CommSemiring R] [A
         (monomial (Finsupp.single none b + β.mapDomain some) 1) =
       monomial (Finsupp.single none (a + b + 1) + (α + β).mapDomain some)
         (algebraMap ℚ R ((a.factorial * b.factorial : ℚ) / ((a + b + 1).factorial : ℚ))) := by
-  rw [tConvolution, rename_monomial, rename_monomial, monomial_mul, one_mul, exponent_eq,
+  rw [tConvolution, rename_monomial, rename_monomial, monomial_mul_monomial, one_mul, exponent_eq,
     simplexIntegral_monomial_one, degree_single_add_single, factorial_single_add_single,
     Nat.add_succ_sub_one, Nat.cast_mul]
 
@@ -212,7 +212,7 @@ private lemma single_none_add_mapDomain_some (e : Option σ →₀ ℕ) :
     Finsupp.single none (e none) + e.some.mapDomain some = e := by
   ext (_ | j)
   · simp [Finsupp.mapDomain_of_notMem_range]
-  · simp [Finsupp.mapDomain_apply (Option.some_injective σ)]
+  · simp [Finsupp.mapDomain_apply_of_injective (Option.some_injective σ)]
 
 /-- The convolution of a monomial `z^e` with `1` is its antiderivative
 `z^(e + e_t) / (e_t + 1)`. -/
@@ -259,7 +259,7 @@ private lemma antiderivative_monomial (t : σ) (δ : σ →₀ ℕ) (c : ℝ) :
 
 /-- `[z^(γ + e_t)] ∫₀ᵗ F ds = [z^γ] F / (γ_t + 1)`. -/
 private lemma coeff_add_single_antiderivative (t : σ) (F : MvPolynomial σ ℝ) (γ : σ →₀ ℕ) :
-    coeff (γ + single t 1) (antiderivative t F) = coeff γ F / ((γ t : ℝ) + 1) := by
+    (antiderivative t F).coeff (γ + single t 1) = F.coeff γ / ((γ t : ℝ) + 1) := by
   classical
   induction F using MvPolynomial.induction_on' with
   | monomial δ c =>
@@ -267,23 +267,23 @@ private lemma coeff_add_single_antiderivative (t : σ) (F : MvPolynomial σ ℝ)
     by_cases h : δ = γ
     · subst h
       simp
-    · rw [if_neg (by simpa using h), if_neg h, zero_div]
+    · rw [ite_eq_right (by simpa using h), ite_eq_right h, zero_div]
   | add p q hp hq => simp [hp, hq, add_div]
 
 /-- `[z^γ] ∫₀ᵗ F ds = 0` when `γ_t = 0`. -/
 private lemma coeff_antiderivative_of_eq_zero (t : σ) (F : MvPolynomial σ ℝ) {γ : σ →₀ ℕ}
-    (hγ : γ t = 0) : coeff γ (antiderivative t F) = 0 := by
+    (hγ : γ t = 0) : (antiderivative t F).coeff γ = 0 := by
   classical
   induction F using MvPolynomial.induction_on' with
   | monomial δ c =>
-    rw [antiderivative_monomial, coeff_monomial, if_neg]
+    rw [antiderivative_monomial, coeff_monomial, ite_eq_right]
     rintro rfl
     simp at hγ
   | add p q hp hq => simp [hp, hq]
 
 private lemma exists_eq_add_single_of_coeff_antiderivative_ne_zero {t : σ}
-    {F : MvPolynomial σ ℝ} {γ : σ →₀ ℕ} (h : coeff γ (antiderivative t F) ≠ 0) :
-    ∃ δ, γ = δ + single t 1 ∧ coeff δ F ≠ 0 := by
+    {F : MvPolynomial σ ℝ} {γ : σ →₀ ℕ} (h : (antiderivative t F).coeff γ ≠ 0) :
+    ∃ δ, γ = δ + single t 1 ∧ F.coeff δ ≠ 0 := by
   have hγ : γ - single t 1 + single t 1 = γ := tsub_add_cancel_of_le <| Finsupp.single_le_iff.2 <|
     Nat.one_le_iff_ne_zero.2 fun h0 => h (coeff_antiderivative_of_eq_zero t F h0)
   refine ⟨γ - single t 1, hγ.symm, fun h0 => h ?_⟩
@@ -299,7 +299,7 @@ private lemma isHomogeneous_antiderivative {t : σ} {F : MvPolynomial σ ℝ} {d
 private lemma hasNonnegCoeffs_antiderivative {t : σ} {F : MvPolynomial σ ℝ}
     (hF : F.HasNonnegCoeffs) : (antiderivative t F).HasNonnegCoeffs := by
   intro γ
-  by_cases h : coeff γ (antiderivative t F) = 0
+  by_cases h : (antiderivative t F).coeff γ = 0
   · exact h.ge
   obtain ⟨δ, rfl, -⟩ := exists_eq_add_single_of_coeff_antiderivative_ne_zero h
   rw [coeff_add_single_antiderivative]
@@ -431,7 +431,7 @@ variable {α β : Type*}
 /-- Renaming along an equivalence reads coefficients through the inverse equivalence. -/
 private lemma coeff_rename_equiv {R : Type*} [CommSemiring R] (e : α ≃ β)
     (f : MvPolynomial α R) (γ : β →₀ ℕ) :
-    coeff γ (rename e f) = coeff (Finsupp.equivMapDomain e.symm γ) f := by
+    (rename e f).coeff γ = f.coeff (Finsupp.equivMapDomain e.symm γ) := by
   have h : γ = Finsupp.mapDomain e (Finsupp.equivMapDomain e.symm γ) := by
     ext b; simp [Finsupp.equivMapDomain_eq_mapDomain, ← Finsupp.mapDomain_comp]
   conv_lhs => rw [h]
@@ -565,7 +565,7 @@ private lemma isLorentzian_rename {α β : Type*} [Fintype α] [Fintype β]
     (hf : f.IsLorentzian) : (rename e f).IsLorentzian := by
   classical
   have h := hsub (fun i j => if j = e i then 1 else 0) (fun i j => by split_ifs <;> norm_num) f hf
-  simp only [ite_smul, one_smul, zero_smul, Finset.sum_ite_eq', Finset.mem_univ, if_true] at h
+  simp only [ite_smul, one_smul, zero_smul, Finset.sum_ite_eq', Finset.mem_univ, ite_true] at h
   rwa [rename_eq_aeval]
 
 /-- **Convolution preserves the Lorentzian property**: if `F G ∈ ℝ[x, t]` are (homogeneous)

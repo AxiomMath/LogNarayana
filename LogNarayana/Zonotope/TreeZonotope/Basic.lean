@@ -275,11 +275,11 @@ private theorem exists_orientation (R : Type*) [Ring R] [LinearOrder R] [IsStric
     refine ⟨fun e => if he : e = e₀ then y else h' ⟨e, he⟩, fun e => ?_, fun w => ?_⟩
     · by_cases he : e = e₀
       · subst he; simpa using hy
-      · simp only [dif_neg he]; exact hh' ⟨e, he⟩
+      · simp only [dite_eq_right he]; exact hh' ⟨e, he⟩
     · rw [indegree_eq_single_add _ e₀, hsplit, hpy]
       have hr : (fun e : {e // e ≠ e₀} => if he : (e : E) = e₀ then y else h' ⟨e, he⟩) = h' := by
         funext e; simp [e.2]
-      simp only [dif_pos, hr, Finsupp.add_apply, Nat.cast_add]
+      simp only [dite_eq_left, hr, Finsupp.add_apply, Nat.cast_add]
       rw [← hind' w]
       congr 1
       by_cases hw : w = y
@@ -302,7 +302,7 @@ private theorem eq_of_indegree_eq (n : ℕ) {E : Type*} [Fintype E] (G : Looples
     have hrest : ∀ h ∈ G.orientations, indegree (fun e : {e // e ≠ e₀} => h e) v = 0 := by
       intro h hh
       rw [indegree_apply]
-      refine Finset.sum_eq_zero fun e _ => if_neg fun hev => e.2 (hleaf e ?_)
+      refine Finset.sum_eq_zero fun e _ => ite_eq_right fun hev => e.2 (hleaf e ?_)
       rcases hh e with h' | h' <;> [exact Or.inl (h' ▸ hev); exact Or.inr (h' ▸ hev)]
     have key := congrArg (· v) heq
     simp only [indegree_eq_single_add _ e₀, Finsupp.add_apply, hrest _ hh₁, hrest _ hh₂,
@@ -386,7 +386,7 @@ private lemma isForest_pathFour : pathFour.IsForest := by
     ext u v
     simp only [fromEdgeSet_adj, Set.mem_range, pathGraph_adj]
     fin_cases u <;> fin_cases v <;> simp [Fin.exists_fin_succ]
-  refine ((isTree_iff_connected_and_card).2 ⟨hP ▸ pathGraph_connected 3, ?_⟩).isAcyclic
+  refine ((isTree_iff_connected_and_card).2 ⟨hP ▸ connected_pathGraph_add_one 3, ?_⟩).isAcyclic
   rw [edgeSet_fromEdgeSet, sdiff_eq_left.2, Nat.card_range_of_injective hinj]
   · simp
   · rw [Set.disjoint_left]
