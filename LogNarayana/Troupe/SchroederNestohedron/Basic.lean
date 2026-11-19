@@ -95,7 +95,7 @@ private lemma map_finsum_mem_of_ne_zero {α M N : Type*} [AddCommMonoid M] [AddC
 private lemma X_mul_injective {R : Type*} [Semiring R] {p q : R[X]} (h : X * p = X * q) :
     p = q := by
   ext n
-  simpa [coeff_X_mul] using congrArg (coeff · (n + 1)) h
+  simpa [coeff_X_mul] using congrArg (·.coeff (n + 1)) h
 
 /-- The Schröder factor `R_q`, shifted by `X`, counts Schröder trees with `q` nodes by
 `1 + ` their number of black nodes. -/

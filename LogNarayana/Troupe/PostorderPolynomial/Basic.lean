@@ -88,7 +88,7 @@ private theorem numNodesOfType_leaf_eq {α : Type*} :
     have := numNodesOfType_leaf_eq l
     have := numNodesOfType_leaf_eq r
     cases l <;> cases r <;> simp_all [numNodesOfType, vertexType]
-    all_goals omega
+    omega
 
 /-- In a nonempty binary plane tree, `n_leaf(T) = n_bin(T) + 1`. -/
 @[lognarayana "lem_tree_leaf_count"]

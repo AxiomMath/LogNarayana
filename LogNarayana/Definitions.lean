@@ -396,12 +396,18 @@ section
 
 namespace BinaryTree
 
+/-- A colored binary plane tree `T` satisfies the local rule `P ⊆ 𝔗 × C` when
+`(type_T(v), χ(v)) ∈ P` for every vertex `v` of `T`, where `χ(v)` is the color (label) of `v`.
+The empty tree satisfies every local rule. -/
+def SatisfiesLocalRule {C : Type*} (P : Set (VertexType × C)) : BinaryTree C → Prop
+  | nil => True
+  | node a l r => (vertexType l r, a) ∈ P ∧ SatisfiesLocalRule P l ∧ SatisfiesLocalRule P r
+
 /-- The family `𝐔_P` of colored binary plane trees cut out by the local rule `P ⊆ 𝔗 × C`: the
 trees `T` such that `(type_T(v), χ(v)) ∈ P` for every vertex `v` of `T`, where `χ(v)` is the color
 (label) of `v`. The empty tree belongs to every such family. -/
-def localRuleFamily {C : Type*} (P : Set (VertexType × C)) : Set (BinaryTree C)
-  | nil => True
-  | node a l r => (vertexType l r, a) ∈ P ∧ localRuleFamily P l ∧ localRuleFamily P r
+def localRuleFamily {C : Type*} (P : Set (VertexType × C)) : Set (BinaryTree C) :=
+  {T | SatisfiesLocalRule P T}
 
 /-- The family `𝐔_{X_L,X_a,X_b}` of colored binary plane trees in which each leaf has a color in
 `X_L`, each unary vertex with a left child a color in `X_a`, each unary vertex with a right child
@@ -1173,7 +1179,7 @@ public noncomputable def higherKernelOperator (m : ℕ) (K : MvPolynomial (Optio
     exact iterate_map_add (pderiv (R := R) (none : Option σ)) m _ _
   map_smul' c U := by
     simp only [tConvolution, map_smul, smul_mul_assoc, RingHom.id_apply]
-    simpa only [Module.End.pow_apply, Derivation.coeFn_coe] using
+    simpa only [pow_apply_eq_iterate, Derivation.coeFn_coe] using
       map_smul ((pderiv (none : Option σ)).toLinearMap ^ m) c _
 
 end QAlgebra

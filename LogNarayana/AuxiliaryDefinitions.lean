@@ -473,7 +473,7 @@ open Polynomial
 /-- The base polytope `P_M = conv {𝟏_B | B ∈ 𝔹(M)} ⊆ R^α` of a matroid `M`: the convex hull
 of the indicator vectors of its bases. -/
 @[lognarayana "def_matroid_base_polytope"]
-public def Matroid.basePolytope {α : Type*} (R : Type*) [Semiring R] [PartialOrder R]
+public noncomputable def Matroid.basePolytope {α : Type*} (R : Type*) [Semiring R] [PartialOrder R]
     (M : Matroid α) : Set (α → R) :=
   convexHull R ((fun B : Set α => B.indicator 1) '' {B | M.IsBase B})
 

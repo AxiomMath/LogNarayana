@@ -870,7 +870,7 @@ public theorem lagrangeInversion_one_add_X_of_le_two (R : Type*) [CommRing R] :
   · simp only [pow_one, Nat.cast_ofNat, Nat.cast_one, one_mul, c2, sq2]
     simp [coeff_X, coeff_one]
   · rw [sq G, PowerSeries.coeff_mul, Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk, sq2]
-    simp [Finset.sum_range_succ, c0, c1, c2, coeff_X, coeff_one]
+    simp [Finset.sum_range_succ, c0, c1, c2, coeff_X]
 
 end CitedResultsDischarged.Polynomials
 
@@ -1504,8 +1504,9 @@ private lemma fiber_213_iff (𝒯 : BinaryTree (ℕ × C)) :
       exists_false, disjoint_singleton_right, empty_union, insert_union, ↓existsAndEq,
       exists_eq_or_imp, disjoint_insert_right] at hpost hmem ⊢ <;>
     obtain ⟨rfl, rfl, rfl⟩ := hpost <;>
-    (simp only [Nat.not_ofNat_lt_one, Nat.one_lt_ofNat, Nat.lt_add_one, and_self, and_true,
-      false_and] at hmem; try tauto)
+    simp only [Nat.not_ofNat_lt_one, Nat.one_lt_ofNat, Nat.lt_add_one, and_self, and_true,
+      false_and] at hmem
+    tauto
   · rintro ⟨c₁, c₂, h₁, h₂, rfl⟩
     simp only [familyDecreasingLabelings, schroederTrees, Set.union_insert, Set.union_singleton,
       decreasingLabelings, decreasingColoredTrees, decreasingTrees, Set.mem_ofPred_eq,

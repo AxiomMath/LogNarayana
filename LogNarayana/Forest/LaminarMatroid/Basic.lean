@@ -815,7 +815,8 @@ public theorem openChoiceSet_stackReconstruction {N : ℕ} {par : ℕ → Option
       mem_univ, true_and, mem_right_iff hpar hI, mem_singleton, mem_sdiff, mem_filter,
       List.mem_toFinset, cnt_eq, hv] at hz ⊢
     by_cases ht : (true, v) ∈ I <;> by_cases hf : (false, v) ∈ I <;> cases b <;>
-      (simp_all; try tauto)
+      simp_all
+    tauto
   · have h1 : (true, v) ∉ I := fun h => hv (hground h)
     have h2 : (false, v) ∉ I := fun h => hv (hground h)
     have hv' : 1 ≤ v → ¬v ≤ N := fun h₁ h₂ => hv (mem_Icc.2 ⟨h₁, h₂⟩)

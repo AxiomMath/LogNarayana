@@ -116,7 +116,8 @@ private lemma exists_tight {ι α : Type*} {E : Set α} {A : ι → Set α} {c :
     by_contra heA
     rw [Set.insert_inter_of_notMem heA] at hk
     exact (hI.2 k).not_gt hk
-  rw [Set.insert_inter_of_mem heA, Set.encard_insert_of_notMem (fun h => heI h.1)] at hk
+  rw [Set.insert_inter_of_mem heA,
+    Set.encard_insert_of_notMem (fun (h : e ∈ I ∩ A k) => heI h.1)] at hk
   exact ⟨k, heA, le_antisymm (hI.2 k) ((ENat.lt_add_one_iff' (by simp)).1 hk)⟩
 
 /-- Among the indices satisfying `P`, one has a trace on the finite set `E` of maximal size. -/

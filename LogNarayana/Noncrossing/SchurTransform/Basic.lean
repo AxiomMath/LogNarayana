@@ -347,7 +347,7 @@ public theorem kostkaNumber_hook {r : ℕ} (hr : 1 ≤ r) (a d : ℕ) (α : Fin 
     rw [Set.ncard_eq_one]
     refine ⟨T, Set.eq_singleton_iff_unique_mem.2 ⟨⟨hT, hTα⟩, fun T' hT' => ?_⟩⟩
     exact tableau_unique hr hT'.1 hT (hT'.2.trans hTα.symm)
-  · convert Set.ncard_empty (SemistandardYoungTableau (hook r a d).youngDiagram)
+  · convert Set.ncard_empty (SemistandardYoungTableau (hook r a d).youngDiagram) using 2
     ext T
     simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
     exact fun hT hTα => h (condition_of_mem hr hT hTα)
@@ -909,7 +909,10 @@ public theorem isLogConcave_schurNarayanaTransform_hook
     (hook r a d).schurNarayanaTransform.IsLogConcave := by
   apply isLogConcave_of_X_pow_mul r
   rw [finsum_latticePoints_prod_narayanaPolynomial_hook hr a d,
-    finsum_mem_congr rfl fun q hq => Finset.prod_congr rfl fun i _ =>
+    finsum_mem_congr rfl fun q (hq : q ∈ Set.latticePoints
+        ((fun v : Fin r → ℝ => (fun _ => (a : ℝ) + 1) + v) ''
+          ((d : ℝ) • coordSimplex ℝ (Set.univ : Set (Fin r))))) =>
+      Finset.prod_congr rfl fun i _ =>
       (deformedNarayanaPolynomial_one
         (one_le_floor_of_mem_image_add_smul_coordSimplex hq.1 i)).symm,
     image_add_smul_coordSimplex]
@@ -924,7 +927,7 @@ private lemma eq_hook_two (μ : PartitionAtMostParts 2) :
   apply Subtype.ext
   funext i
   fin_cases i <;> simp [hook]
-  all_goals omega
+  omega
 
 
 /-- For every partition `μ = (μ₁, μ₂)` with at most two parts, the Narayana transform `Φ_{μ,2}`

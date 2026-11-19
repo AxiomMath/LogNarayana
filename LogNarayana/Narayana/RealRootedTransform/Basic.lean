@@ -264,7 +264,7 @@ private lemma coeff_appellDiagonal_monomial {σ R : Type*} [CommRing R] (α : σ
   obtain ⟨h1, h2⟩ := prod_natDegree_le_and_coeff α.support (fun i => signedAppell R (α i)) α
     fun i _ => signedAppell_natDegree_le_and_coeff R (α i)
   rw [← Finsupp.degree_apply] at h1 h2
-  rw [appellDiagonal_monomial, Polynomial.coeff_smul, smul_eq_mul, Finsupp.prod]
+  rw [appellDiagonal_monomial, AddMonoidAlgebra.coeff_smul_apply, smul_eq_mul, Finsupp.prod]
   split_ifs with h
   · rw [h, h2, mul_one]
   · rw [Polynomial.coeff_eq_zero_of_natDegree_lt (by omega), mul_zero]
@@ -460,8 +460,8 @@ public theorem eq_C_mul_one_add_X_pow_mul_prod_of_eval_eq_gamma
     (hP : ∀ x : ℝ, x ≠ -1 → P.eval x = (1 + x) ^ D * Γ.eval (μ * x / (1 + x) ^ 2))
     (hΓ : Γ = C c * ∏ j, (1 + C (ρ j ^ 2) * X)) :
     P = C c * (1 + X) ^ (D - 2 * ℓ) * ∏ j, ((1 + X) ^ 2 + C (μ * ρ j ^ 2) * X) := by
-  refine eq_of_infinite_eval_eq _ _ ((Set.finite_singleton (-1 : ℝ)).infinite_compl.mono
-    fun x (hx : x ≠ -1) => ?_)
+  refine eq_of_infinite_eval_eq _ _ ((Set.finite_singleton (-1 : ℝ)).infinite_compl.mono ?_)
+  intro x (hx : x ≠ -1)
   have hx' : 1 + x ≠ 0 := fun h => hx (by linarith)
   simp only [Set.mem_ofPred_eq, hP x hx, hΓ, eval_mul, eval_C, eval_prod, eval_add, eval_one,
     eval_X, eval_pow, mul_left_comm _ c, pow_mul_prod_one_add_mul_div_sq hx' hℓ, mul_assoc]
@@ -527,7 +527,8 @@ public theorem IsHomogeneous.gammaTransform_eq_C_mul_prod
   obtain ⟨ℓ, ρ, hℓ, hρ, hH⟩ :=
     appellDiagonal_eq_mul_prod_X_sq_sub_of_isRealStable hBB hNR hD hstable hnonneg
   refine ⟨ℓ, hℓ, ρ, hρ, Polynomial.eq_of_infinite_eval_eq _ _
-    ((Set.Iio_infinite (0 : ℝ)).mono fun v (hv : v < 0) => ?_)⟩
+    ((Set.Iio_infinite (0 : ℝ)).mono ?_)⟩
+  intro v (hv : v < 0)
   -- every `v < 0` is `-(t⁻¹)²` for `t = (√(-v))⁻¹ ≠ 0`
   obtain ⟨t, ht, rfl⟩ : ∃ t : ℝ, t ≠ 0 ∧ -(t⁻¹) ^ 2 = v :=
     ⟨(√(-v))⁻¹, inv_ne_zero (Real.sqrt_pos.2 (neg_pos.2 hv)).ne',

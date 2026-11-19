@@ -525,7 +525,8 @@ private lemma kernelCoeff_monomial (m j k : ℕ) (β : σ →₀ ℕ) :
   simp only [kernelCoeff, LinearMap.smul_apply, LinearMap.coe_comp, Function.comp_apply,
     AlgEquiv.toLinearMap_apply, optionEquivLeft_monomial,
     single_none_add_mapDomain_some_apply_none, some_single_none_add_mapDomain_some,
-    LinearMap.coe_restrictScalars, Polynomial.lcoeff_apply, Polynomial.coeff_monomial]
+    LinearMap.coe_restrictScalars, Polynomial.lcoeff_apply, Polynomial.coeff_monomial,
+    Finsupp.single_apply]
   split_ifs with h1 h2 h2
   · rw [smul_monomial, smul_eq_mul, mul_one]
   · omega
@@ -652,7 +653,7 @@ private lemma higherKernelOperator_monomial [Algebra ℚ R] {m : ℕ} (hm : 1 �
         (rename some).toLinearMap ∘ₗ kernelCoeff m j
   have hL : ∀ K', higherKernelOperator m K' U = LK K' := by
     intro K'
-    simp only [LK, LinearMap.comp_apply, Module.End.pow_apply, Derivation.coeFn_coe,
+    simp only [LK, LinearMap.comp_apply, pow_apply_eq_iterate, Derivation.coeFn_coe,
       LinearMap.mulLeft_apply, AlgHom.toLinearMap_apply]
     rfl
   have hR : ∀ K', rename some (kernelCoeff m 0 K') * antiderivative none U +
@@ -690,7 +691,7 @@ public theorem higherKernelOperator_eq_sum_kernelCoeff [Algebra ℚ R] {m : ℕ}
         RU U' := by
     intro U'
     simp only [RU, LinearMap.add_apply, LinearMap.sum_apply, LinearMap.comp_apply,
-      LinearMap.mulLeft_apply, Module.End.pow_apply, Derivation.coeFn_coe]
+      LinearMap.mulLeft_apply, pow_apply_eq_iterate, Derivation.coeFn_coe]
   rw [hR]
   congr 1
   refine (basisMonomials _ R).ext fun e => ?_

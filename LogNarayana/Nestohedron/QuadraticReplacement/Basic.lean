@@ -117,7 +117,7 @@ private lemma eq_zero_of_sum_C_mul_X_pow_mul_one_add_X_pow {R : Type*} [CommSemi
   induction j using Nat.strong_induction_on with
   | _ j ih =>
   intro hj
-  have hc := congrArg (coeff · j) hf
+  have hc := congrArg (·.coeff j) hf
   simp only [finsetSum_coeff, mul_assoc, coeff_C_mul, coeff_X_pow_mul', coeff_zero] at hc
   rw [Finset.sum_eq_single_of_mem j (mem_range.2 hj)] at hc
   · simpa [coeff_zero_eq_eval_zero] using hc
@@ -164,7 +164,7 @@ private lemma algebraMap_ne_zero {p : ℝ[X]} (hp : p ≠ 0) : φ p ≠ 0 :=
   (map_ne_zero_iff _ (RatFunc.algebraMap_injective ℝ)).2 hp
 
 private lemma algebraMap_one_add_X_ne_zero : φ (1 + X) ≠ 0 :=
-  algebraMap_ne_zero fun h => by simpa [coeff_one] using congrArg (coeff · 1) h
+  algebraMap_ne_zero fun h => by simpa [coeff_one] using congrArg (·.coeff 1) h
 
 /-- The image in `ℝ(x)` of a `γ`-sum of degree `d`: with `y = 1 + x` and `t = x / y^2`,
 `∑_{g ≤ d/2} c_g x^g y^{d - 2g} = y^d ∑_{g ≤ d/2} c_g t^g`. -/

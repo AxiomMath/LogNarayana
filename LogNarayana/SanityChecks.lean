@@ -137,7 +137,7 @@ theorem sanity_narayana_three : narayanaPolynomial 3 = X + 3 * X ^ 2 + X ^ 3 := 
 theorem sanity_narayana_four : narayanaPolynomial 4 = X + 6 * X ^ 2 + 6 * X ^ 3 + X ^ 4 := by
   ext j; rw [coeff_narayanaPolynomial (by norm_num)]
   rcases j with _ | _ | _ | _ | _ | j <;> simp [coeff_X_pow, coeff_X, Nat.choose]
-  all_goals norm_num
+  norm_num
 
 /-- `N_5 = x + 10x² + 20x³ + 10x⁴ + x⁵` (Narayana numbers `1, 10, 20, 10, 1`). -/
 theorem sanity_narayana_five :
@@ -172,7 +172,7 @@ theorem sanity_shifted_two : shiftedNarayanaPolynomial 2 = 1 + 3 * X + X ^ 2 := 
 theorem sanity_shifted_three : shiftedNarayanaPolynomial 3 = 1 + 6 * X + 6 * X ^ 2 + X ^ 3 := by
   ext j; rw [coeff_shiftedNarayanaPolynomial]
   rcases j with _ | _ | _ | _ | j <;> simp [coeff_X_pow, coeff_X, coeff_one, Nat.choose]
-  all_goals norm_num
+  norm_num
 
 /-- `Ñ_4 = 1 + 10x + 20x² + 10x³ + x⁴`. -/
 theorem sanity_shifted_four :
@@ -1087,7 +1087,7 @@ theorem sanity_isLorentzian_add_sq :
     intro α
     rw [mem_support_iff, coeff_add_sq]
     split_ifs <;> simp_all
-    all_goals omega
+    omega
   · intro α hα
     rw [(Finsupp.degree_eq_zero_iff α).1 (by simpa using hα), iteratedPDeriv_zero]
     refine posIndex_le_one_of_fin_two _ ![1, -1] (fun h => by simpa using congrFun h 0) ?_

@@ -195,7 +195,8 @@ public theorem degree_lt_of_mem_support_appellOperator_sub {R : Type*} [CommRing
   rw [← mem_lowDeg, F.as_sum, map_sum, ← Finset.sum_sub_distrib]
   refine Submodule.sum_mem _ fun α hα => ?_
   have := Submodule.smul_mem _ (F.coeff α)
-    (restrictSupport_mono R (fun γ (h : γ.degree < α.degree) => (h.trans_le (hF α hα) : _))
+    (restrictSupport_mono R (s := {γ | γ.degree < α.degree}) (t := {γ | γ.degree < D})
+      (fun γ (h : γ.degree < α.degree) => (h.trans_le (hF α hα) : _))
       (appellOperator_monomial_sub_mem_lowDeg α))
   rwa [smul_sub, ← map_smul, smul_monomial, smul_eq_mul, mul_one] at this
 

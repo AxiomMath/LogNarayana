@@ -168,10 +168,10 @@ private lemma integral_cornerSimplex_succ {n : ℕ} {θ : ℝ} (hθ : 0 ≤ θ)
         congr 1 with s
         classical
         simp only [indicator_apply, K, cons_mem_cornerSimplex, hx0, true_and]
-      · rw [indicator_of_notMem fun h => hxθ h.2]
+      · rw [indicator_of_notMem fun (h : x ∈ Icc 0 θ) => hxθ h.2]
         simp [indicator, K, cons_mem_cornerSimplex,
           cornerSimplex_eq_empty (by linarith : θ - x < 0)]
-    · rw [indicator_of_notMem fun h => hx0 h.1]
+    · rw [indicator_of_notMem fun (h : x ∈ Icc 0 θ) => hx0 h.1]
       simp [indicator, K, cons_mem_cornerSimplex, hx0]
   rw [← integral_indicator hKm, ← hmp.symm.integral_comp' (K.indicator f), integral_prod _ hint]
   simp only [he, hslice]

@@ -513,7 +513,7 @@ public theorem exists_isLaminar_basisGeneratingPolynomial_eq_fiberTopPolynomial
       true_and, Finset.coe_sdiff, mem_sdiff, Finset.coe_Icc, mem_Icc] at he
     omega
   obtain ⟨hinj', hmaps⟩ := positionRelabelMap_injOn_mapsTo hπ
-  have hinj : InjOn ρ (E₀ : Set (Bool × ℕ)) := hinj'.mono hE₀n
+  have hinj : InjOn ρ (E₀ : Set (Bool × ℕ)) := hinj'.mono fun e he => hE₀n e he
   have hρG : ρ '' E₀ ⊆ G := by
     rintro _ ⟨e, he, rfl⟩
     exact hmaps e (hE₀n e he)

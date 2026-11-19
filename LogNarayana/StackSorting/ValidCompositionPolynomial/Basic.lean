@@ -189,7 +189,7 @@ public theorem validCompositionPoly_2135467 (R : Type*) [CommSemiring R] :
 
 private lemma X_sq_add_X_add_one_ne_zero :
     (Polynomial.X ^ 2 + Polynomial.X + 1 : Polynomial ℝ) ≠ 0 := fun h => by
-  simpa using congrArg (Polynomial.coeff · 0) h
+  simpa using congrArg (·.coeff 0) h
 
 /-- `t² + t + 1` is not real-rooted: it has degree `2` but no real root. -/
 private lemma not_splits_X_sq_add_X_add_one :

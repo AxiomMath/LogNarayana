@@ -1747,7 +1747,7 @@ public theorem bijOn_treeMatching_treeRightChoices {n : ℕ} (hn : 1 ≤ n) {π 
     obtain ⟨h1, h2⟩ := eq_of_hasLeft_hasRight hMT.1 (hpo ▸ treeRightChoices_subset T) hM.1 hC
       fun j hj => by
         have := hk' j (List.mem_range.2 (by omega))
-        simp only [code, Prod.mk.injEq] at this
+        simp only [Proof_lem_matching_tree_bijection.code, Prod.mk.injEq] at this
         exact ⟨this.2.1.symm, this.2.2.symm⟩
     simp only [h1, h2]
 
@@ -2688,7 +2688,8 @@ public theorem fiberTopPolynomial_eq_finsum_fiberMatchings (R : Type*) [CommSemi
   classical
   rw [List.fiberTopPolynomial, ← finsum_mem_coe_finset,
     ← finsum_mem_eq_of_bijOn _ (bijOn_inorder_postorder_eq_stackFiber hπ) (fun _ _ => rfl),
-    finsum_mem_congr rfl fun T hT => inorder_monomial_eq R hn hπ hT.1 hT.2,
+    finsum_mem_congr rfl fun T (hT : T ∈ {T : BinaryTree ℕ | T ∈ decreasingTrees (Finset.Icc 1 n) ∧
+      T.postorder = π}) => inorder_monomial_eq R hn hπ hT.1 hT.2,
     finsum_mem_eq_of_bijOn _ (BinaryTree.bijOn_treeMatching_treeRightChoices hn hπ)
       (g := fun p => (∏ v ∈ p.1.image Prod.snd, X (true, π[v]!) * X (false, π[v]!)) *
         ((∏ v ∈ p.2, X (true, π[v]!)) *
