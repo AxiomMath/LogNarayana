@@ -319,13 +319,25 @@ theorem sanity_fiberDescent_identity :
     simp
     ring
 
+/-- The stack-sorting fiber of `2135467`: its 22 permutations, found by enumerating all `7!`
+permutations once. -/
+lemma fiberList_2135467 :
+    fiberList [2, 1, 3, 5, 4, 6, 7] =
+      [[2, 3, 1, 5, 6, 4, 7], [2, 5, 1, 3, 6, 4, 7], [2, 5, 3, 1, 6, 4, 7], [5, 2, 3, 1, 6, 4, 7],
+        [2, 3, 1, 5, 7, 4, 6], [2, 5, 1, 3, 7, 4, 6], [2, 5, 3, 1, 7, 4, 6], [5, 2, 3, 1, 7, 4, 6],
+        [2, 3, 1, 5, 7, 6, 4], [2, 5, 1, 3, 7, 6, 4], [2, 5, 3, 1, 7, 6, 4], [5, 2, 3, 1, 7, 6, 4],
+        [2, 3, 1, 7, 5, 6, 4], [2, 7, 1, 3, 5, 6, 4], [2, 7, 3, 1, 5, 6, 4], [7, 2, 3, 1, 5, 6, 4],
+        [2, 7, 1, 5, 3, 6, 4], [2, 7, 5, 1, 3, 6, 4], [2, 7, 5, 3, 1, 6, 4], [7, 2, 5, 1, 3, 6, 4],
+        [7, 2, 5, 3, 1, 6, 4], [7, 5, 2, 3, 1, 6, 4]] := by
+  decide +kernel
+
 /-- `D_{2135467}(x) = 5x² + 12x³ + 5x⁴` (Sec. 1.2 and Example 3.3), by enumerating all `7!`
 permutations. -/
 theorem sanity_fiberDescent_2135467 :
     List.fiberDescentPolynomial ℝ [2, 1, 3, 5, 4, 6, 7] = 5 * X ^ 2 + 12 * X ^ 3 + 5 * X ^ 4 := by
   rw [List.fiberDescentPolynomial, sum_stackFiber' List.numDescents (X ^ ·)
     (List.replicate 5 2 ++ List.replicate 12 3 ++ List.replicate 5 4) (fun _ => rfl)
-    (by decide +kernel)]
+    (by rw [fiberList_2135467]; decide +kernel)]
   simp only [List.map_append, List.map_replicate, List.sum_append, List.sum_replicate,
     nsmul_eq_mul]
   push_cast
@@ -340,7 +352,7 @@ theorem sanity_fiberHomog_2135467 :
   refine (sum_stackFiber' List.numDescents
     (fun d => (MvPolynomial.X 0 : MvPolynomial (Fin 2) ℝ) ^ d * MvPolynomial.X 1 ^ (7 - 1 - d))
     (List.replicate 5 2 ++ List.replicate 12 3 ++ List.replicate 5 4) (fun _ => rfl)
-    (by decide +kernel)).trans ?_
+    (by rw [fiberList_2135467]; decide +kernel)).trans ?_
   simp only [List.map_append, List.map_replicate, List.sum_append, List.sum_replicate,
     nsmul_eq_mul]
   push_cast
@@ -357,7 +369,7 @@ theorem sanity_fiberPeak_2135467 (lam : ℝ) :
     (fun p => MvPolynomial.C (lam ^ p.1) * (MvPolynomial.X 0 : MvPolynomial (Fin 2) ℝ) ^ p.2 *
       MvPolynomial.X 1 ^ (7 - 1 - p.2))
     (List.replicate 5 (2, 2) ++ List.replicate 10 (2, 3) ++ List.replicate 5 (2, 4) ++
-      List.replicate 2 (3, 3)) (fun _ => rfl) (by decide +kernel)).trans ?_
+      List.replicate 2 (3, 3)) (fun _ => rfl) (by rw [fiberList_2135467]; decide +kernel)).trans ?_
   simp only [List.map_append, List.map_replicate, List.sum_append, List.sum_replicate,
     nsmul_eq_mul, MvPolynomial.C_mul, map_ofNat MvPolynomial.C, MvPolynomial.C_pow]
   push_cast
@@ -369,7 +381,7 @@ theorem sanity_peak_distribution_2135467 (z : ℝ) :
     (∑ σ ∈ List.stackFiber [2, 1, 3, 5, 4, 6, 7], (X : ℝ[X]) ^ σ.peakCount).eval z =
       2 ^ 6 * (5 * (z / 4) ^ 2 + 2 * (z / 4) ^ 3) := by
   rw [sum_stackFiber' List.peakCount (X ^ ·) (List.replicate 20 2 ++ List.replicate 2 3)
-    (fun _ => rfl) (by decide +kernel)]
+    (fun _ => rfl) (by rw [fiberList_2135467]; decide +kernel)]
   simp only [List.map_append, List.map_replicate, List.sum_append, List.sum_replicate,
     nsmul_eq_mul, eval_add, eval_mul, eval_pow, eval_X, eval_natCast]
   ring
@@ -487,14 +499,17 @@ lemma fiberMatchings_eq (π : List ℕ) :
     simp only [Finset.mem_filter, Finset.mem_product, Finset.mem_Icc]; omega
   · rintro ⟨-, h2, h1, h3⟩; exact ⟨h1, h2, h3⟩
 
-set_option maxHeartbeats 2000000 in
--- exhaustive enumeration of candidate matchings by `decide` is expensive
 /-- `Γ_{2135467}(z) = 5z² + 2z³` (Example 3.3): the seven matchings of `𝒜(2135467)`, found by
 enumerating all sets of at most three candidate pairs. -/
 theorem sanity_gamma_2135467 :
     List.fiberMatchingPolynomial ℝ [2, 1, 3, 5, 4, 6, 7] = 5 * X ^ 2 + 2 * X ^ 3 := by
+  -- The candidate sets of different sizes are disjoint, so the union needs no deduplication
+  -- (deduplicating the 576 candidates is what made the kernel check slow).
   have key : (fiberMatchingsFinset [2, 1, 3, 5, 4, 6, 7]).val.map Finset.card =
       ((List.replicate 5 2 ++ List.replicate 2 3 : List ℕ) : Multiset ℕ) := by
+    rw [fiberMatchingsFinset, Finset.filter_biUnion, ← Finset.disjiUnion_eq_biUnion _ _
+      fun _ _ _ _ hab =>
+        Finset.disjoint_filter_filter (Finset.pairwise_disjoint_powersetCard _ hab)]
     decide +kernel
   rewrite [List.fiberMatchingPolynomial, fiberMatchings_eq, finsum_mem_coe_finset,
     Finset.sum_eq_multiset_sum,

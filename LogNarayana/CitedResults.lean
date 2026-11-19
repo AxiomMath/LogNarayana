@@ -1652,15 +1652,41 @@ section Computable
 
 attribute [local instance] decNC decLE
 
-set_option maxRecDepth 100000 in
+/-- The block counts `(|Q|, |P|)` of the noncrossing chains `P ≤ Q` in `NC(3)`, enumerated once. -/
+private lemma edelman3_blockCounts :
+    (univ.filter (fun p : Finpartition (Icc 1 3) × Finpartition (Icc 1 3) =>
+        p.1.IsNoncrossing ∧ p.2.IsNoncrossing ∧ p.1 ≤ p.2)).val.map
+          (fun p => (p.2.blockCount, p.1.blockCount)) =
+      (([(3, 3), (2, 3), (2, 3), (2, 3), (1, 3), (2, 2), (2, 2), (2, 2), (1, 2), (1, 2), (1, 2),
+        (1, 1)] : List (ℕ × ℕ)) : Multiset (ℕ × ℕ)) := by
+  decide +kernel
+
 private lemma edelman3_dec (k ℓ : ℕ) (h1 : 1 ≤ k) (h2 : k ≤ ℓ) (h3 : ℓ ≤ 3) :
     (univ.filter (fun p : Finpartition (Icc 1 3) × Finpartition (Icc 1 3) =>
         p.1.IsNoncrossing ∧ p.2.IsNoncrossing ∧ p.1 ≤ p.2 ∧
           p.2.blockCount = k ∧ p.1.blockCount = ℓ)).card * 3 =
       (3 : ℕ).choose (k - 1) * (3 : ℕ).choose (ℓ - k) * (3 : ℕ).choose (3 - ℓ) := by
-  interval_cases ℓ <;> interval_cases k <;> decide +kernel
+  have : univ.filter (fun p : Finpartition (Icc 1 3) × Finpartition (Icc 1 3) =>
+        p.1.IsNoncrossing ∧ p.2.IsNoncrossing ∧ p.1 ≤ p.2 ∧
+          p.2.blockCount = k ∧ p.1.blockCount = ℓ) =
+      (univ.filter (fun p : Finpartition (Icc 1 3) × Finpartition (Icc 1 3) =>
+        p.1.IsNoncrossing ∧ p.2.IsNoncrossing ∧ p.1 ≤ p.2)).filter
+          (fun p => (k, ℓ) = (p.2.blockCount, p.1.blockCount)) := by
+    ext p; simp only [mem_filter, mem_univ, true_and, Prod.mk.injEq]; grind
+  rw [this, card_def, filter_val, ← Multiset.count_map, edelman3_blockCounts]
+  interval_cases ℓ <;> interval_cases k <;> decide
 
-set_option maxRecDepth 100000 in
+/-- The numbers of blocks of sizes `1, 2, 3` of the noncrossing partitions in `NC(3)`, enumerated
+once. -/
+private lemma kreweras3_blockSizes :
+    (univ.filter (fun ρ : Finpartition (Icc 1 3) => ρ.IsNoncrossing)).val.map
+        (fun ρ => ((ρ.parts.filter (fun B => B.card = 1)).card,
+          (ρ.parts.filter (fun B => B.card = 2)).card,
+          (ρ.parts.filter (fun B => B.card = 3)).card)) =
+      (([(3, 0, 0), (1, 1, 0), (1, 1, 0), (1, 1, 0), (0, 0, 1)] : List (ℕ × ℕ × ℕ)) :
+        Multiset (ℕ × ℕ × ℕ)) := by
+  decide +kernel
+
 private lemma kreweras3_dec (a b c : ℕ) (h : a + 2 * b + 3 * c = 3) :
     (univ.filter (fun ρ : Finpartition (Icc 1 3) => ρ.IsNoncrossing ∧
         ((ρ.parts.filter (fun B => B.card = 1)).card = a ∧
@@ -1668,9 +1694,19 @@ private lemma kreweras3_dec (a b c : ℕ) (h : a + 2 * b + 3 * c = 3) :
         (ρ.parts.filter (fun B => B.card = 3)).card = c))).card *
       ((3 - (a + b + c) + 1).factorial * (a.factorial * b.factorial * c.factorial)) =
       (3 : ℕ).factorial := by
+  have : univ.filter (fun ρ : Finpartition (Icc 1 3) => ρ.IsNoncrossing ∧
+        ((ρ.parts.filter (fun B => B.card = 1)).card = a ∧
+        (ρ.parts.filter (fun B => B.card = 2)).card = b ∧
+        (ρ.parts.filter (fun B => B.card = 3)).card = c)) =
+      (univ.filter (fun ρ : Finpartition (Icc 1 3) => ρ.IsNoncrossing)).filter
+        (fun ρ => (a, b, c) = ((ρ.parts.filter (fun B => B.card = 1)).card,
+          (ρ.parts.filter (fun B => B.card = 2)).card,
+          (ρ.parts.filter (fun B => B.card = 3)).card)) := by
+    ext ρ; simp only [mem_filter, mem_univ, true_and, Prod.mk.injEq]; grind
+  rw [this, card_def, filter_val, ← Multiset.count_map, kreweras3_blockSizes]
   have : (a = 3 ∧ b = 0 ∧ c = 0) ∨ (a = 1 ∧ b = 1 ∧ c = 0) ∨ (a = 0 ∧ b = 0 ∧ c = 1) := by
     omega
-  rcases this with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ <;> decide +kernel
+  rcases this with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ <;> decide
 
 end Computable
 
